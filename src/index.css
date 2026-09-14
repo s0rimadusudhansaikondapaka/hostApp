@@ -1,0 +1,96 @@
+@import '@ionic/react/css/core.css';
+@import '@ionic/react/css/normalize.css';
+@import '@ionic/react/css/structure.css';
+@import '@ionic/react/css/typography.css';
+@import '@ionic/react/css/padding.css';
+@import '@ionic/react/css/float-elements.css';
+@import '@ionic/react/css/text-alignment.css';
+@import '@ionic/react/css/text-transformation.css';
+@import '@ionic/react/css/flex-utils.css';
+@import '@ionic/react/css/display.css';
+@import './theme/variables.css';
+
+* {
+  box-sizing: border-box;
+}
+
+/* Wireframe Button Styles */
+.host-btn-primary {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border-radius: 9999px !important;
+  font-weight: 600 !important;
+  font-size: 0.92rem !important;
+  letter-spacing: 0.02em;
+  text-transform: none !important;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
+}
+
+.host-btn-outline {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1.5px solid #0f172a !important;
+  border-radius: 9999px !important;
+  font-weight: 600 !important;
+  font-size: 0.92rem !important;
+  text-transform: none !important;
+}
+
+/* Card Styling matching wireframe */
+.host-action-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.host-action-card:active {
+  transform: scale(0.98);
+  border-color: #2563eb;
+  background: #f8fafc;
+}
+
+/* Clean Form inputs */
+.host-input {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #0f172a;
+  background-color: #ffffff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.host-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.host-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.35rem;
+  margin-top: 0.75rem;
+}
+
+/* Badge styling */
+.host-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}

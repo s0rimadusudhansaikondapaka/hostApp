@@ -1,0 +1,7 @@
+{
+  "name": "ashram-host-mobile",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}

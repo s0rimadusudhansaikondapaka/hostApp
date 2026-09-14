@@ -1,0 +1,12 @@
+{
+  "appId": "org.ashram.vms.host",
+  "appName": "Ashram Host",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}
