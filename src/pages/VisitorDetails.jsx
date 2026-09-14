@@ -12,7 +12,7 @@ import {
   IonModal,
 } from '@ionic/react';
 import { useParams } from 'react-router-dom';
-import { getHostRegistrations, getPublicPassDetails, updateApproval, getBaseUrl } from '../services/api';
+import { getHostRegistrations, getPublicPassDetails, updateApproval, getBaseUrl, getFrontendUrl } from '../services/api';
 import { Share2, Ban, CheckCircle, Car, Users, Calendar, ShieldCheck, MapPin, ZoomIn, ZoomOut, Maximize2, Download, Copy, Check } from 'lucide-react';
 import QRCode from 'qrcode';
 
@@ -70,13 +70,16 @@ export default function VisitorDetails({ match, history }) {
 
   const handleShare = async () => {
     if (!visitor) return;
-    const shareText = `Jay Sai Ram! Here is your official Gate Pass for Sathya Sai Grama:\n\nGuest: ${visitor.visitor_name}\nPasscode: ${visitor.pass_code}\nCategory: ${visitor.visitor_category || 'General'}\nStatus: ${visitor.status}\n\nShow this pass at Ashram Security Gate upon arrival.`;
+    const frontendUrl = getFrontendUrl();
+    const passUrl = `${frontendUrl}/?pass=${visitor.pass_code}`;
+    const shareText = `Jay Sai Ram! Here is your official Gate Pass for Sathya Sai Grama:\n\nGuest: ${visitor.visitor_name}\nPasscode: ${visitor.pass_code}\nCategory: ${visitor.visitor_category || 'General'}\nStatus: ${visitor.status}\n\nDigital Pass: ${passUrl}\n\nShow this pass at Ashram Security Gate upon arrival.`;
 
     if (navigator.share) {
       try {
         await navigator.share({
           title: `Ashram Gate Pass - ${visitor.pass_code}`,
           text: shareText,
+          url: passUrl,
         });
         return;
       } catch (e) {}

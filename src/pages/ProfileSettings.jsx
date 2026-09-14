@@ -17,6 +17,8 @@ import {
   deleteResidentFamilyMember,
   getBaseUrl,
   setBaseUrl,
+  getFrontendUrl,
+  setFrontendUrl,
 } from '../services/api';
 import { User, Users, Plus, Trash2, Globe, LogOut, Shield, Home, Building, QrCode, ZoomIn, ZoomOut, Share2, Download, Copy, Check } from 'lucide-react';
 import QRCode from 'qrcode';
@@ -29,6 +31,7 @@ export default function ProfileSettings({ history }) {
   const [fmPhone, setFmPhone] = useState('');
   const [fmRelation, setFmRelation] = useState('Spouse');
   const [apiUrl, setApiUrlState] = useState(getBaseUrl());
+  const [frontendUrl, setFrontendUrlState] = useState(getFrontendUrl());
   const [toastMsg, setToastMsg] = useState('');
   const [hostQrUrl, setHostQrUrl] = useState('');
   const [showHostPassModal, setShowHostPassModal] = useState(false);
@@ -97,7 +100,8 @@ export default function ProfileSettings({ history }) {
 
   const handleSaveApiUrl = () => {
     setBaseUrl(apiUrl);
-    setToastMsg('API Server URL updated!');
+    setFrontendUrl(frontendUrl);
+    setToastMsg('Server & Portal URLs updated!');
   };
 
   const handleLogout = () => {
@@ -259,14 +263,46 @@ export default function ProfileSettings({ history }) {
               >
                 Cloud (Render)
               </button>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '1rem', marginBottom: '0.6rem' }}>
+              <Globe size={18} color="#059669" />
+              <h3 style={{ margin: 0, fontSize: '0.98rem', fontWeight: '800', color: '#0f172a' }}>Guest Portal / Frontend URL</h3>
+            </div>
+            <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.74rem', color: '#64748b' }}>
+              Used for guest invite links and online visitor gate passes.
+            </p>
+            <input
+              type="text"
+              className="host-input"
+              value={frontendUrl}
+              onChange={(e) => setFrontendUrlState(e.target.value)}
+              placeholder="e.g. https://vms-qrf6.onrender.com"
+            />
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.6rem' }}>
               <button
                 type="button"
-                onClick={handleSaveApiUrl}
-                style={{ flex: 1, padding: '0.4rem', background: '#0f172a', color: 'white', border: 'none', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 'bold', cursor: 'pointer' }}
+                onClick={() => setFrontendUrlState('http://localhost:5173')}
+                style={{ flex: 1, padding: '0.4rem', border: '1px solid #cbd5e1', background: '#f8fafc', borderRadius: '6px', fontSize: '0.72rem', cursor: 'pointer' }}
               >
-                Save URL
+                Local (5173)
+              </button>
+              <button
+                type="button"
+                onClick={() => setFrontendUrlState('https://vms-qrf6.onrender.com')}
+                style={{ flex: 1, padding: '0.4rem', border: '1px solid #cbd5e1', background: '#f8fafc', borderRadius: '6px', fontSize: '0.72rem', cursor: 'pointer' }}
+              >
+                Cloud (Render)
               </button>
             </div>
+
+            <button
+              type="button"
+              onClick={handleSaveApiUrl}
+              style={{ width: '100%', marginTop: '1rem', padding: '0.6rem', background: '#0f172a', color: 'white', border: 'none', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              Save Configuration
+            </button>
           </div>
 
           {/* Logout Button */}
@@ -451,9 +487,11 @@ export default function ProfileSettings({ history }) {
               <button
                 type="button"
                 onClick={() => {
-                  const shareText = `Jay Sai Ram! Here is my official Ashram Host Gate Pass:\n\nHost: ${user?.name}\nRole: ${user?.role}\nPasscode: ${user?.pass_code}\nValidity: Permanent`;
+                  const frontendUrl = getFrontendUrl();
+                  const passUrl = `${frontendUrl}/?pass=${user?.pass_code}`;
+                  const shareText = `Jay Sai Ram! Here is my official Ashram Host Gate Pass:\n\nHost: ${user?.name}\nRole: ${user?.role}\nPasscode: ${user?.pass_code}\nValidity: Permanent\n\nDigital Pass: ${passUrl}`;
                   if (navigator.share) {
-                    navigator.share({ title: 'Host Gate Pass', text: shareText }).catch(() => {});
+                    navigator.share({ title: 'Host Gate Pass', text: shareText, url: passUrl }).catch(() => {});
                   } else {
                     window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
                   }

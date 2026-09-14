@@ -1,5 +1,7 @@
 // Default backend API URL: Always connects by default to Render cloud server API (same as guard)
 export const DEFAULT_API_BASE_URL = 'https://smsavmsserver.onrender.com/api';
+// Default frontend web application URL (where guest invite form & pass view reside)
+export const DEFAULT_FRONTEND_URL = 'https://vms-qrf6.onrender.com';
 
 export const getBaseUrl = () => {
   const saved = localStorage.getItem('ASHRAM_HOST_API_URL');
@@ -12,6 +14,38 @@ export const getBaseUrl = () => {
 
 export const setBaseUrl = (url) => {
   localStorage.setItem('ASHRAM_HOST_API_URL', url);
+};
+
+export const getFrontendUrl = () => {
+  const saved = localStorage.getItem('ASHRAM_HOST_FRONTEND_URL');
+  if (saved && !saved.includes('localhost') && !saved.includes('capacitor') && saved !== '/') {
+    return saved.replace(/\/$/, '');
+  }
+
+  if (import.meta.env.VITE_FRONTEND_URL) {
+    return import.meta.env.VITE_FRONTEND_URL.replace(/\/$/, '');
+  }
+
+  const currentApi = getBaseUrl();
+  const isCapacitorOrLocal =
+    window.location.protocol === 'capacitor:' ||
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1';
+
+  // If running locally in development and connected to local backend (5004), default local frontend to 5173
+  if (isCapacitorOrLocal && (currentApi.includes('localhost:5004') || currentApi.includes('127.0.0.1:5004'))) {
+    return 'http://localhost:5173';
+  }
+
+  return DEFAULT_FRONTEND_URL;
+};
+
+export const setFrontendUrl = (url) => {
+  if (url) {
+    localStorage.setItem('ASHRAM_HOST_FRONTEND_URL', url.replace(/\/$/, ''));
+  } else {
+    localStorage.removeItem('ASHRAM_HOST_FRONTEND_URL');
+  }
 };
 
 export const getAuthHeaders = () => {

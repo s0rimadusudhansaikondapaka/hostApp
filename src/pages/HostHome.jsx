@@ -15,7 +15,7 @@ import {
 } from '@ionic/react';
 import { personCircleOutline, notificationsOutline, logOutOutline, qrCodeOutline } from 'ionicons/icons';
 import { useAuth } from '../context/AuthContext';
-import { getHostRegistrations } from '../services/api';
+import { getHostRegistrations, getFrontendUrl } from '../services/api';
 import { UserPlus, Clock, Users, History, ChevronRight, Shield, QrCode, ZoomIn, ZoomOut, Share2, Download, Maximize2, Copy, Check } from 'lucide-react';
 import QRCode from 'qrcode';
 
@@ -341,9 +341,11 @@ export default function HostHome({ history }) {
               <button
                 type="button"
                 onClick={() => {
-                  const shareText = `Jay Sai Ram! Here is my official Ashram Host Gate Pass:\n\nHost: ${user?.name}\nRole: ${user?.role}\nPasscode: ${user?.pass_code}\nValidity: Permanent`;
+                  const frontendUrl = getFrontendUrl();
+                  const passUrl = `${frontendUrl}/?pass=${user?.pass_code}`;
+                  const shareText = `Jay Sai Ram! Here is my official Ashram Host Gate Pass:\n\nHost: ${user?.name}\nRole: ${user?.role}\nPasscode: ${user?.pass_code}\nValidity: Permanent\n\nDigital Pass: ${passUrl}`;
                   if (navigator.share) {
-                    navigator.share({ title: 'Host Gate Pass', text: shareText }).catch(() => {});
+                    navigator.share({ title: 'Host Gate Pass', text: shareText, url: passUrl }).catch(() => {});
                   } else {
                     window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
                   }

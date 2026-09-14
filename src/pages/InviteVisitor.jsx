@@ -11,7 +11,7 @@ import {
   IonModal,
 } from '@ionic/react';
 import { useAuth } from '../context/AuthContext';
-import { createRegistration, generateInviteToken } from '../services/api';
+import { createRegistration, generateInviteToken, getFrontendUrl } from '../services/api';
 import { Share2, Plus, Trash2, CheckCircle, Calendar, Users, Car, AlertCircle } from 'lucide-react';
 
 const VEHICLE_TYPES = [
@@ -241,7 +241,8 @@ export default function InviteVisitor({ history }) {
     }
   };
 
-  const inviteLink = `${window.location.origin}/?invite=true&${shareToken ? `token=${shareToken}` : `guid=${user?.guid || user?.id || 1}`}`;
+  const frontendUrl = getFrontendUrl();
+  const inviteLink = `${frontendUrl}/?invite=true&${shareToken ? `token=${shareToken}` : `guid=${user?.guid || user?.id || 1}`}`;
 
   const isVipOrHodHost = user?.role === 'HOD' || user?.user_type === 'HOD' || user?.role === 'VIP_HOST' || user?.user_type === 'VIP_HOST' || (user?.user_type && user.user_type.includes('VIP_HOST')) || (user?.role && user.role.includes('VIP_HOST'));
 
@@ -579,6 +580,24 @@ export default function InviteVisitor({ history }) {
                   ✉️ Share via Email
                 </button>
               </a>
+
+              {navigator.share && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.share({
+                        title: 'Sathya Sai Grama - Visitor Invite',
+                        text: `Jay Sai Ram! Please fill out your visitor pre-approval registration form for Sathya Sai Grama using this link: ${inviteLink}`,
+                        url: inviteLink,
+                      });
+                    } catch (e) {}
+                  }}
+                  style={{ width: '100%', background: '#0f172a', border: 'none', color: 'white', fontWeight: 'bold', fontSize: '0.88rem', padding: '0.75rem', borderRadius: '9999px', cursor: 'pointer' }}
+                >
+                  🔗 Share via Other Apps
+                </button>
+              )}
 
               <button
                 type="button"
