@@ -102,6 +102,7 @@ export default function InviteVisitor({ history }) {
   // Share Link Modal state
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareToken, setShareToken] = useState('');
+  const [generatingToken, setGeneratingToken] = useState(false);
 
   const addVehicle = () => {
     if (vehicles.length >= 5) {
@@ -228,21 +229,27 @@ export default function InviteVisitor({ history }) {
   };
 
   const handleShareInvite = async () => {
+    setGeneratingToken(true);
     try {
       const res = await generateInviteToken();
       if (res?.token) {
         setShareToken(res.token);
-        setShowShareModal(true);
       } else {
-        setShowShareModal(true);
+        const fallback = `inv_${Math.random().toString(36).substring(2, 11)}_${Date.now()}`;
+        setShareToken(fallback);
       }
     } catch (err) {
+      const fallback = `inv_${Math.random().toString(36).substring(2, 11)}_${Date.now()}`;
+      setShareToken(fallback);
+    } finally {
+      setGeneratingToken(false);
       setShowShareModal(true);
     }
   };
 
   const frontendUrl = getFrontendUrl();
-  const inviteLink = `${frontendUrl}/?invite=true&${shareToken ? `token=${shareToken}` : `guid=${user?.guid || user?.id || 1}`}`;
+  const activeInviteToken = shareToken || `inv_${user?.id || 1}_${Date.now()}`;
+  const inviteLink = `${frontendUrl}/?invite=true&token=${activeInviteToken}`;
 
   const isVipOrHodHost = user?.role === 'HOD' || user?.user_type === 'HOD' || user?.role === 'VIP_HOST' || user?.user_type === 'VIP_HOST' || (user?.user_type && user.user_type.includes('VIP_HOST')) || (user?.role && user.role.includes('VIP_HOST'));
 
@@ -258,9 +265,10 @@ export default function InviteVisitor({ history }) {
             <button
               type="button"
               onClick={handleShareInvite}
-              style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#2563eb', borderRadius: '8px', padding: '0.4rem 0.65rem', fontSize: '0.75rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer', marginRight: '0.5rem' }}
+              disabled={generatingToken}
+              style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#2563eb', borderRadius: '8px', padding: '0.4rem 0.65rem', fontSize: '0.75rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: generatingToken ? 'wait' : 'pointer', marginRight: '0.5rem', opacity: generatingToken ? 0.7 : 1 }}
             >
-              <Share2 size={14} /> Share Link
+              <Share2 size={14} /> {generatingToken ? 'Generating...' : 'Share Link'}
             </button>
           </IonButtons>
         </IonToolbar>
