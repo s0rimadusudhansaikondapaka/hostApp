@@ -38,6 +38,7 @@ export default function InviteVisitor({ history }) {
   const [category, setCategory] = useState('GENERAL');
   const [purpose, setPurpose] = useState('');
   const [visitType, setVisitType] = useState('HOME');
+  const [gender, setGender] = useState('Male');
 
   // Accompanying Breakdown & Mode
   const [registrationMode, setRegistrationMode] = useState('Single');
@@ -46,7 +47,7 @@ export default function InviteVisitor({ history }) {
   const [boysCount, setBoysCount] = useState(0);
   const [girlsCount, setGirlsCount] = useState(0);
 
-  // Visit Window Dates
+  // Visit Window Dates (Operating window: 5:00 AM - 10:00 PM; Strictly single-day for Phase 1)
   const getDefaultFrom = () => {
     const now = new Date();
     if (now.getHours() < 5) {
@@ -63,16 +64,29 @@ export default function InviteVisitor({ history }) {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
-  const getDefaultUntil = () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(21, 0, 0, 0); // 9:00 PM
-    const year = tomorrow.getFullYear();
-    const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
-    const day = String(tomorrow.getDate()).padStart(2, '0');
-    const hours = String(tomorrow.getHours()).padStart(2, '0');
-    const minutes = String(tomorrow.getMinutes()).padStart(2, '0');
+  const computeSameDayDeparture = (fromDateStr) => {
+    if (!fromDateStr) return '';
+    const from = new Date(fromDateStr);
+    if (isNaN(from.getTime())) return '';
+    const dep = new Date(from.getTime());
+    // Auto-populate departure on same calendar day: 4 hours later, capped at 21:30 (9:30 PM)
+    dep.setHours(dep.getHours() + 4);
+    const maxTime = new Date(from.getTime());
+    maxTime.setHours(21, 30, 0, 0);
+    const chosenTime = dep.getTime() > maxTime.getTime() ? maxTime : dep;
+    const minDep = new Date(from.getTime() + 30 * 60 * 1000);
+    const finalTime = chosenTime.getTime() < minDep.getTime() ? minDep : chosenTime;
+
+    const year = finalTime.getFullYear();
+    const month = String(finalTime.getMonth() + 1).padStart(2, '0');
+    const day = String(finalTime.getDate()).padStart(2, '0');
+    const hours = String(finalTime.getHours()).padStart(2, '0');
+    const minutes = String(finalTime.getMinutes()).padStart(2, '0');
     return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  const getDefaultUntil = () => {
+    return computeSameDayDeparture(getDefaultFrom());
   };
 
   const getMinDateTime = () => {
@@ -87,6 +101,11 @@ export default function InviteVisitor({ history }) {
 
   const [validFrom, setValidFrom] = useState(getDefaultFrom());
   const [validUntil, setValidUntil] = useState(getDefaultUntil());
+
+  const handleArrivalChange = (val) => {
+    setValidFrom(val);
+    setValidUntil(computeSameDayDeparture(val));
+  };
 
   // Vehicles (Up to 5)
   const [vehicles, setVehicles] = useState([
@@ -126,6 +145,7 @@ export default function InviteVisitor({ history }) {
     setFullName('');
     setPhone('');
     setEmail('');
+    setGender('Male');
     setCategory('GENERAL');
     setPurpose('');
     setRegistrationMode('Single');
@@ -133,8 +153,9 @@ export default function InviteVisitor({ history }) {
     setAdultWomen(0);
     setBoysCount(0);
     setGirlsCount(0);
-    setValidFrom(getDefaultFrom());
-    setValidUntil(getDefaultUntil());
+    const defaultFrom = getDefaultFrom();
+    setValidFrom(defaultFrom);
+    setValidUntil(computeSameDayDeparture(defaultFrom));
     setVehicles([{ plate_number: '', vehicle_type: 'Select', driver_name: '', driver_phone: '' }]);
     setAccommodationRequired(false);
     setRemarks('');
@@ -187,8 +208,8 @@ export default function InviteVisitor({ history }) {
       }));
 
     const isSingle = registrationMode === 'Single';
-    const computedMen = isSingle ? 1 : parseInt(adultMen) || 0;
-    const computedWomen = isSingle ? 0 : parseInt(adultWomen) || 0;
+    const computedMen = isSingle ? (gender === 'Female' ? 0 : 1) : parseInt(adultMen) || 0;
+    const computedWomen = isSingle ? (gender === 'Female' ? 1 : 0) : parseInt(adultWomen) || 0;
     const computedBoys = isSingle ? 0 : parseInt(boysCount) || 0;
     const computedGirls = isSingle ? 0 : parseInt(girlsCount) || 0;
 
@@ -196,6 +217,7 @@ export default function InviteVisitor({ history }) {
       full_name: fullName,
       phone,
       email,
+      gender,
       visitor_category: category,
       host_id: user?.id || 1,
       purpose: purpose || 'Ashram Visit',
@@ -315,7 +337,7 @@ export default function InviteVisitor({ history }) {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', marginTop: '0.4rem' }}>
               <div>
-                <label className="host-label">Mobile Number *</label>
+                <label className="host-label">WhatsApp Number *</label>
                 <input
                   type="tel"
                   required
@@ -326,14 +348,12 @@ export default function InviteVisitor({ history }) {
                 />
               </div>
               <div>
-                <label className="host-label">Email (Optional)</label>
-                <input
-                  type="email"
-                  className="host-input"
-                  placeholder="visitor@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+                <label className="host-label">Gender *</label>
+                <select className="host-input" value={gender} onChange={(e) => setGender(e.target.value)}>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
             </div>
 
@@ -361,7 +381,18 @@ export default function InviteVisitor({ history }) {
               </div>
             </div>
 
-            <label className="host-label">Purpose of Visit</label>
+            <div style={{ marginTop: '0.4rem' }}>
+              <label className="host-label">Email (Optional)</label>
+              <input
+                type="email"
+                className="host-input"
+                placeholder="visitor@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <label className="host-label" style={{ marginTop: '0.4rem' }}>Purpose of Visit</label>
             <input
               type="text"
               className="host-input"
@@ -386,7 +417,7 @@ export default function InviteVisitor({ history }) {
                   min={getMinDateTime()}
                   className="host-input"
                   value={validFrom}
-                  onChange={(e) => setValidFrom(e.target.value)}
+                  onChange={(e) => handleArrivalChange(e.target.value)}
                 />
               </div>
               <div>
@@ -394,15 +425,16 @@ export default function InviteVisitor({ history }) {
                 <input
                   type="datetime-local"
                   required
-                  min={validFrom || getMinDateTime()}
+                  disabled
                   className="host-input"
+                  style={{ background: '#f1f5f9', cursor: 'not-allowed', color: '#334155' }}
                   value={validUntil}
                   onChange={(e) => setValidUntil(e.target.value)}
                 />
               </div>
             </div>
             <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', marginTop: '0.35rem' }}>
-              * Operating gate hours: 5:00 AM to 10:00 PM. Past dates are strictly blocked.
+              * Phase 1 enforces strictly single-day visits (5:00 AM – 10:00 PM). Scheduled departure is auto-computed on the same date and locked.
             </span>
           </div>
 
