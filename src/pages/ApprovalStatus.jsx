@@ -164,136 +164,211 @@ export default function ApprovalStatus({ history }) {
   return (
     <IonPage>
       <IonHeader className="ion-no-border">
-        <IonToolbar style={{ '--background': '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
+        <IonToolbar style={{ '--background': '#faf6f0', borderBottom: '1px solid #ebdccc' }}>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/home" text="" />
+            <IonBackButton defaultHref="/home" text="" color="dark" />
           </IonButtons>
-          <IonTitle style={{ fontSize: '1.05rem', fontWeight: '800', color: '#0f172a' }}>Approval Status</IonTitle>
+          <IonTitle style={{ fontSize: '1.05rem', fontWeight: '800', color: '#1c1917' }}>Approval Status</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent fullscreen className="ion-padding" style={{ '--background': '#f8fafc' }}>
+      <IonContent fullscreen className="ion-padding" style={{ '--background': '#faf6f0' }}>
         <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
           <IonRefresherContent />
         </IonRefresher>
 
-        {/* Filter Tabs matching Wireframe Screen 4 */}
-        <div style={{ display: 'flex', gap: '0.4rem', overflowX: 'auto', paddingBottom: '0.6rem', marginBottom: '0.8rem' }}>
+        {/* 1. Horizontal Filter Chips matching Attachment 1 */}
+        <div className="host-chips-row" style={{ marginTop: '0.2rem', marginBottom: '0.8rem' }}>
           {[
-            { id: 'ALL', label: 'All' },
-            { id: 'PENDING', label: 'Pending' },
-            { id: 'APPROVED', label: 'Approved' },
-            { id: 'CHECKED_IN', label: 'Checked-In' },
-            { id: 'REJECTED', label: 'Rejected' },
+            { id: 'ALL', label: `All (${registrations.length})` },
+            { id: 'PENDING', label: `⏳ Pending (${registrations.filter(r => r.status === 'PENDING_L1').length})` },
+            { id: 'APPROVED', label: `✓ Approved (${registrations.filter(r => r.status === 'APPROVED').length})` },
+            { id: 'CHECKED_IN', label: `🟢 Inside (${registrations.filter(r => r.status === 'INSIDE_CAMPUS').length})` },
+            { id: 'REJECTED', label: `❌ Rejected (${registrations.filter(r => r.status === 'REJECTED').length})` },
           ].map((tab) => (
             <button
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              style={{
-                padding: '0.35rem 0.8rem',
-                borderRadius: '20px',
-                fontSize: '0.78rem',
-                fontWeight: '700',
-                whiteSpace: 'nowrap',
-                cursor: 'pointer',
-                border: activeTab === tab.id ? '1.5px solid #0f172a' : '1px solid #cbd5e1',
-                background: activeTab === tab.id ? '#0f172a' : '#ffffff',
-                color: activeTab === tab.id ? '#ffffff' : '#475569',
-              }}
+              className={`host-filter-chip ${activeTab === tab.id ? 'active' : ''}`}
             >
               {tab.label}
             </button>
           ))}
         </div>
 
-        {/* Search Bar */}
-        <div style={{ position: 'relative', marginBottom: '1rem' }}>
+        {/* 2. Search Container matching Attachment 1 */}
+        <div className="host-search-container" style={{ marginBottom: '1rem' }}>
+          <Search size={18} color="#78716c" />
           <input
             type="text"
-            className="host-input"
-            placeholder="Search by visitor name, mobile, passcode..."
+            className="host-search-input"
+            placeholder="Search visitor, phone, or passcode..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ paddingLeft: '2.2rem' }}
           />
-          <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '13px' }} />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              style={{ background: 'none', border: 'none', color: '#78716c', fontWeight: 'bold', cursor: 'pointer', padding: '0 4px' }}
+            >
+              ✕
+            </button>
+          )}
         </div>
 
-        {/* Visitors List matching Wireframe Screen 4 */}
-        <div>
+        {/* 3. Section Header matching Attachment 1 */}
+        <div className="host-section-header">
+          <div className="host-section-title-wrap">
+            <h3 className="host-section-title">Visitor Passes</h3>
+            <div className="host-section-underline"></div>
+          </div>
+          <div className="host-section-count">
+            {filtered.length} Listed
+          </div>
+        </div>
+
+        {/* 4. Visitors List Cards matching Attachment 1 (`media_1790425543026.jpg`) */}
+        <div style={{ marginTop: '0.6rem' }}>
           {filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#64748b' }}>
-              <Clock size={40} color="#cbd5e1" style={{ marginBottom: '0.5rem' }} />
-              <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 'bold' }}>No visitor records found</p>
-              <span style={{ fontSize: '0.78rem' }}>Visitors matching this filter will appear here.</span>
+            <div style={{ textAlign: 'center', padding: '3rem 1rem', background: '#ffffff', borderRadius: '22px', border: '1.5px dashed #ebdccc', color: '#78716c' }}>
+              <Clock size={36} color="#d6c7b2" style={{ marginBottom: '0.5rem' }} />
+              <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: '800', color: '#1c1917' }}>No visitor records found</p>
+              <span style={{ fontSize: '0.78rem', color: '#78716c' }}>Visitors matching this category filter will appear here.</span>
             </div>
           ) : (
             filtered.map((r) => {
               const isPending = r.status === 'PENDING_L1';
+              const isInside = r.status === 'INSIDE_CAMPUS';
+              const isApproved = r.status === 'APPROVED' || r.status === 'PENDING_L2';
+              const isRejected = r.status === 'REJECTED';
+
               return (
                 <div
                   key={r.id}
-                  style={{
-                    background: '#ffffff',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '14px',
-                    padding: '1rem',
-                    marginBottom: '0.85rem',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
-                  }}
+                  className="host-visitor-card"
+                  style={{ marginBottom: '0.85rem' }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569', fontWeight: 'bold' }}>
-                        {r.visitor_name ? r.visitor_name.charAt(0).toUpperCase() : 'V'}
-                      </div>
+                  {/* Top Bar with pastel sky-blue tint matching attachment */}
+                  <div className="host-visitor-card-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                      <span style={{ 
+                        background: '#ffffff', 
+                        border: '1px solid #dbeafe', 
+                        color: '#1e40af', 
+                        borderRadius: '9999px', 
+                        padding: '2px 9px', 
+                        fontSize: '0.7rem', 
+                        fontWeight: '700',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '3px'
+                      }}>
+                        👤 {r.visitor_category === 'FAMILY_MEMBER' ? 'Family Member' : r.visitor_category === 'VIP' ? 'VIP Guest' : 'General Visitor'}
+                      </span>
+
+                      {/* Status Pill */}
+                      <span style={{ 
+                        background: isInside ? '#dcfce7' : isApproved ? '#e0f2fe' : isPending ? '#fef3c7' : isRejected ? '#fee2e2' : '#f1f5f9', 
+                        color: isInside ? '#15803d' : isApproved ? '#0369a1' : isPending ? '#b45309' : isRejected ? '#b91c1c' : '#475569', 
+                        borderRadius: '9999px', 
+                        padding: '2px 9px', 
+                        fontSize: '0.7rem', 
+                        fontWeight: '700',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '3px'
+                      }}>
+                        <span>•</span> {isInside ? 'SERVING' : r.status?.replace(/_/g, ' ') || 'PENDING'}
+                      </span>
+                    </div>
+
+                    {/* View Details Icon */}
+                    <div 
+                      onClick={() => history.push(`/visitor-details/${r.pass_code || r.id}`)}
+                      style={{ 
+                        width: '26px', 
+                        height: '26px', 
+                        borderRadius: '50%', 
+                        background: '#ffffff', 
+                        border: '1px solid #e2e8f0', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        color: '#64748b',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <ArrowRight size={14} />
+                    </div>
+                  </div>
+
+                  {/* Body matching Attachment 1 */}
+                  <div className="host-visitor-card-body">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
-                        <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '800', color: '#0f172a' }}>
+                        <h3 style={{ margin: '0 0 0.2rem 0', fontSize: '1.05rem', fontWeight: '800', color: '#1c1917' }}>
                           {r.visitor_name}
-                        </h4>
-                        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{r.visitor_phone}</span>
+                        </h3>
+                        <p style={{ margin: 0, fontSize: '0.76rem', color: '#78716c' }}>
+                          Phone: <strong>{r.visitor_phone}</strong> • Pass: <strong>{r.pass_code || `#${r.id}`}</strong>
+                        </p>
+                        <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.76rem', color: '#57534e' }}>
+                          <strong>Purpose:</strong> {r.purpose || 'Ashram Visit'}
+                        </p>
                       </div>
                     </div>
-                    {getStatusBadge(r.status)}
-                  </div>
 
-                  <div style={{ fontSize: '0.78rem', color: '#475569', lineHeight: '1.4', margin: '0.4rem 0' }}>
-                    <div><strong>Purpose:</strong> {r.purpose || 'Ashram Visit'} ({r.visitor_category || 'GENERAL'})</div>
-                    {r.valid_from && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.2rem' }}>
-                        <Calendar size={13} color="#64748b" />
-                        <span>{formatDate(r.valid_from)} - {formatDate(r.valid_until)}</span>
+                    {/* Bottom Metadata Line */}
+                    <div style={{ 
+                      borderTop: '1px solid #f5eee6', 
+                      marginTop: '0.65rem', 
+                      paddingTop: '0.55rem', 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      fontSize: '0.74rem', 
+                      color: '#57534e' 
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Calendar size={13} color="#b84018" />
+                        <span>{formatDate(r.valid_from)}</span>
                       </div>
-                    )}
-                    {r.vehicles && r.vehicles.length > 0 && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.2rem' }}>
-                        <Car size={13} color="#64748b" />
-                        <span>{r.vehicles.length} Vehicle(s): {r.vehicles.map(v => v.plate_number).join(', ')}</span>
+                      <div style={{ fontWeight: '700', color: '#1c1917', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        {r.vehicles && r.vehicles.length > 0 ? (
+                          <>
+                            <Car size={13} color="#78716c" />
+                            <span>{r.vehicles[0].plate_number}</span>
+                          </>
+                        ) : (
+                          <span>{r.person_count || (r.adult_men_count || 1) + (r.adult_women_count || 0)} Guests</span>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    </div>
 
-                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.8rem', borderTop: '1px solid #f1f5f9', paddingTop: '0.6rem' }}>
-                    {isPending ? (
+                    {/* Action Bar */}
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', borderTop: '1px solid #f5eee6', paddingTop: '0.65rem' }}>
+                      {isPending && (
+                        <button
+                          type="button"
+                          onClick={() => openReviewModal(r)}
+                          className="host-btn-primary"
+                          style={{ flex: 1.2, padding: '0.55rem 0.8rem', border: 'none', cursor: 'pointer', fontSize: '0.8rem' }}
+                        >
+                          Review &amp; Approve
+                        </button>
+                      )}
+
                       <button
                         type="button"
-                        onClick={() => openReviewModal(r)}
-                        className="host-btn-primary"
-                        style={{ flex: 1, padding: '0.55rem', border: 'none', cursor: 'pointer', fontSize: '0.82rem' }}
+                        onClick={() => history.push(`/visitor-details/${r.pass_code || r.id}`)}
+                        className="host-btn-outline"
+                        style={{ flex: 1, padding: '0.55rem 0.8rem', cursor: 'pointer', fontSize: '0.8rem' }}
                       >
-                        Review &amp; Approve
+                        Pass &amp; QR
                       </button>
-                    ) : null}
-
-                    <button
-                      type="button"
-                      onClick={() => history.push(`/visitor-details/${r.pass_code || r.id}`)}
-                      className="host-btn-outline"
-                      style={{ flex: 1, padding: '0.55rem', cursor: 'pointer', fontSize: '0.82rem' }}
-                    >
-                      View Details &amp; QR
-                    </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -301,101 +376,131 @@ export default function ApprovalStatus({ history }) {
           )}
         </div>
 
-        {/* Host Review & Approval Modal */}
+        {/* Host Review & Approval Modal matching Attachment 3 */}
         <IonModal isOpen={!!reviewItem} onDidDismiss={() => setReviewItem(null)}>
           <div style={{ padding: '1.5rem', background: '#ffffff', height: '100%', overflowY: 'auto' }}>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: '800', color: '#0f172a', margin: '0 0 0.3rem 0' }}>
-              Referrer Review &amp; Approval
-            </h2>
-            <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0 0 1rem 0' }}>
-              Review and edit guest details before granting entry approval
+            {/* Header */}
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem', borderBottom: '1.5px solid #f0e6da', paddingBottom: '0.6rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <ShieldCheck size={20} color="#b84018" />
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: '800', color: '#1c1917' }}>Host Entry Approval</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReviewItem(null)}
+                style={{ background: '#f5eee6', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#57534e', fontWeight: 'bold' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Pill Badge matching Attachment 3 */}
+            <div style={{ 
+              background: '#fdede3', 
+              color: '#b84018', 
+              borderRadius: '9999px', 
+              padding: '4px 14px', 
+              fontSize: '0.74rem', 
+              fontWeight: '800',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              marginBottom: '0.8rem'
+            }}>
+              <span>✦</span> VERIFY &amp; AUTHORIZE ENTRY
+            </div>
+
+            <p style={{ fontSize: '0.8rem', color: '#78716c', margin: '0 0 1rem 0' }}>
+              Review or adjust guest details before granting entry authorization.
             </p>
 
             {isVipOrHodHost && (
-              <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '8px', padding: '0.6rem 0.8rem', marginBottom: '1rem', fontSize: '0.78rem', color: '#166534', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <span style={{ fontSize: '1.1rem' }}>⚡</span>
+              <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: '16px', padding: '0.75rem 0.9rem', marginBottom: '1rem', fontSize: '0.78rem', color: '#166534', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '1.2rem' }}>⚡</span>
                 <div>
-                  <strong>VIP / HOD Direct Pass:</strong> Approving will immediately generate the official Gate Pass with zero L2 / PRO delay.
+                  <strong>VIP / HOD Direct Pass:</strong> Approving will immediately generate the official Gate Pass with zero delay.
                 </div>
               </div>
             )}
 
-            {/* Editable Visitor Details */}
-            <label className="host-label" style={{ marginTop: 0 }}>Guest Full Name</label>
-            <input
-              type="text"
-              className="host-input"
-              value={reviewVisitorName}
-              onChange={(e) => setReviewVisitorName(e.target.value)}
-              placeholder="Visitor name"
-            />
+            {/* Editable Visitor Details Card */}
+            <div style={{ background: '#faf6f0', border: '1.5px solid #ede5da', borderRadius: '18px', padding: '1rem', marginBottom: '1rem' }}>
+              <label className="host-label" style={{ marginTop: 0 }}>Guest Full Name</label>
+              <input
+                type="text"
+                className="host-input"
+                value={reviewVisitorName}
+                onChange={(e) => setReviewVisitorName(e.target.value)}
+                placeholder="Visitor name"
+              />
 
-            <label className="host-label">Mobile Number</label>
-            <input
-              type="tel"
-              className="host-input"
-              value={reviewVisitorPhone}
-              onChange={(e) => setReviewVisitorPhone(e.target.value)}
-              placeholder="10-digit mobile"
-            />
+              <label className="host-label">Mobile Number</label>
+              <input
+                type="tel"
+                className="host-input"
+                value={reviewVisitorPhone}
+                onChange={(e) => setReviewVisitorPhone(e.target.value)}
+                placeholder="10-digit mobile"
+              />
 
-            <label className="host-label">Purpose of Visit</label>
-            <input
-              type="text"
-              className="host-input"
-              value={reviewPurpose}
-              onChange={(e) => setReviewPurpose(e.target.value)}
-              placeholder="Purpose"
-            />
+              <label className="host-label">Purpose of Visit</label>
+              <input
+                type="text"
+                className="host-input"
+                value={reviewPurpose}
+                onChange={(e) => setReviewPurpose(e.target.value)}
+                placeholder="Purpose"
+              />
 
-            {/* People breakdown */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.4rem', marginTop: '0.5rem' }}>
-              <div>
-                <label className="host-label">Men</label>
-                <input
-                  type="number"
-                  min="0"
-                  className="host-input"
-                  value={reviewMenCount}
-                  onChange={(e) => setReviewMenCount(parseInt(e.target.value, 10) || 0)}
-                />
-              </div>
-              <div>
-                <label className="host-label">Women</label>
-                <input
-                  type="number"
-                  min="0"
-                  className="host-input"
-                  value={reviewWomenCount}
-                  onChange={(e) => setReviewWomenCount(parseInt(e.target.value, 10) || 0)}
-                />
-              </div>
-              <div>
-                <label className="host-label">Kids</label>
-                <input
-                  type="number"
-                  min="0"
-                  className="host-input"
-                  value={reviewChildrenCount}
-                  onChange={(e) => setReviewChildrenCount(parseInt(e.target.value, 10) || 0)}
-                />
+              {/* People breakdown */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', marginTop: '0.5rem' }}>
+                <div>
+                  <label className="host-label">Men</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="host-input"
+                    value={reviewMenCount}
+                    onChange={(e) => setReviewMenCount(parseInt(e.target.value, 10) || 0)}
+                  />
+                </div>
+                <div>
+                  <label className="host-label">Women</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="host-input"
+                    value={reviewWomenCount}
+                    onChange={(e) => setReviewWomenCount(parseInt(e.target.value, 10) || 0)}
+                  />
+                </div>
+                <div>
+                  <label className="host-label">Kids</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="host-input"
+                    value={reviewChildrenCount}
+                    onChange={(e) => setReviewChildrenCount(parseInt(e.target.value, 10) || 0)}
+                  />
+                </div>
               </div>
             </div>
 
             {/* Vehicles breakdown */}
-            <div style={{ marginTop: '0.8rem', marginBottom: '0.8rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
-                <label className="host-label" style={{ margin: 0 }}>Vehicles</label>
+            <div style={{ background: '#faf6f0', border: '1.5px solid #ede5da', borderRadius: '18px', padding: '1rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                <label className="host-label" style={{ margin: 0 }}>Registered Vehicles</label>
                 <button
                   type="button"
                   onClick={() => setReviewVehicles([...reviewVehicles, { plate_number: '', vehicle_type: 'Car' }])}
-                  style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem', background: '#e2e8f0', color: '#334155', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                  style={{ fontSize: '0.72rem', padding: '0.25rem 0.6rem', background: '#fdede3', border: '1px solid #fed7aa', color: '#b84018', borderRadius: '9999px', cursor: 'pointer', fontWeight: '800' }}
                 >
                   + Add Vehicle
                 </button>
               </div>
               {reviewVehicles.length === 0 ? (
-                <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>No vehicles specified</span>
+                <span style={{ fontSize: '0.75rem', color: '#78716c' }}>No vehicles specified</span>
               ) : (
                 reviewVehicles.map((veh, idx) => (
                   <div key={idx} style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.4rem', alignItems: 'center' }}>
@@ -434,7 +539,7 @@ export default function ApprovalStatus({ history }) {
                         const updated = reviewVehicles.filter((_, i) => i !== idx);
                         setReviewVehicles(updated);
                       }}
-                      style={{ background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: '4px', padding: '0.4rem 0.6rem', cursor: 'pointer' }}
+                      style={{ background: '#fee2e2', color: '#b91c1c', border: 'none', borderRadius: '8px', padding: '0.4rem 0.6rem', cursor: 'pointer', fontWeight: 'bold' }}
                     >
                       ×
                     </button>
@@ -443,38 +548,42 @@ export default function ApprovalStatus({ history }) {
               )}
             </div>
 
-            <label className="host-label" style={{ marginTop: 0 }}>Visit Type</label>
-            <select className="host-input" value={reviewVisitType} onChange={(e) => setReviewVisitType(e.target.value)}>
-              <option value="HOME">Resident / Home Visit</option>
-              <option value="OFFICE">Department / Office Visit</option>
-              <option value="BHAJAN">Ashram Bhajan Visit</option>
-              <option value="EVENT">Ashram Event Visit</option>
-              <option value="TOUR">Ashram Tour Visit</option>
-            </select>
+            <div style={{ background: '#faf6f0', border: '1.5px solid #ede5da', borderRadius: '18px', padding: '1rem', marginBottom: '1rem' }}>
+              <label className="host-label" style={{ marginTop: 0 }}>Visit Type</label>
+              <select className="host-input" value={reviewVisitType} onChange={(e) => setReviewVisitType(e.target.value)}>
+                <option value="HOME">Resident / Home Visit</option>
+                <option value="OFFICE">Department / Office Visit</option>
+                <option value="BHAJAN">Ashram Bhajan Visit</option>
+                <option value="EVENT">Ashram Event Visit</option>
+                <option value="TOUR">Ashram Tour Visit</option>
+              </select>
 
-            <label className="host-label">Priority</label>
-            <select className="host-input" value={reviewPriority} onChange={(e) => setReviewPriority(e.target.value)}>
-              <option value="P1">P1 - Highest / VVIP</option>
-              <option value="P2">P2 - High Priority</option>
-              <option value="P3">P3 - Normal Priority</option>
-              <option value="P4">P4 - Low Priority</option>
-            </select>
+              <label className="host-label">Priority</label>
+              <select className="host-input" value={reviewPriority} onChange={(e) => setReviewPriority(e.target.value)}>
+                <option value="P1">P1 - Highest / VVIP</option>
+                <option value="P2">P2 - High Priority</option>
+                <option value="P3">P3 - Normal Priority</option>
+                <option value="P4">P4 - Low Priority</option>
+              </select>
 
-            <label className="host-label">Referrer Remarks</label>
-            <textarea
-              rows={2}
-              className="host-input"
-              placeholder="Add optional notes for security gate or next level"
-              value={reviewRemarks}
-              onChange={(e) => setReviewRemarks(e.target.value)}
-            />
+              <label className="host-label">Referrer Remarks</label>
+              <textarea
+                rows={2}
+                className="host-input"
+                placeholder="Add optional notes for security gate or next level"
+                value={reviewRemarks}
+                onChange={(e) => setReviewRemarks(e.target.value)}
+              />
+            </div>
 
-            <div style={{ display: 'flex', gap: '0.6rem', marginTop: '1.4rem' }}>
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '0.65rem', marginTop: '1.2rem' }}>
               <button
                 type="button"
                 disabled={submittingAction}
                 onClick={() => handleApprovalAction('APPROVE')}
-                style={{ flex: 1, background: '#15803d', border: 'none', color: '#ffffff', fontWeight: 'bold', padding: '0.75rem', borderRadius: '9999px', cursor: 'pointer', fontSize: '0.88rem' }}
+                className="host-btn-primary"
+                style={{ flex: 1.3, padding: '0.85rem', cursor: 'pointer' }}
               >
                 ✓ Approve Entry
               </button>
@@ -482,16 +591,16 @@ export default function ApprovalStatus({ history }) {
                 type="button"
                 disabled={submittingAction}
                 onClick={() => handleApprovalAction('REJECT')}
-                style={{ flex: 1, background: '#dc2626', border: 'none', color: '#ffffff', fontWeight: 'bold', padding: '0.75rem', borderRadius: '9999px', cursor: 'pointer', fontSize: '0.88rem' }}
+                style={{ flex: 1, background: '#fee2e2', border: '1.5px solid #fecaca', color: '#b91c1c', fontWeight: '800', padding: '0.85rem', borderRadius: '9999px', cursor: 'pointer', fontSize: '0.85rem' }}
               >
-                ❌ Reject
+                ✕ Reject
               </button>
             </div>
 
             <button
               type="button"
               onClick={() => setReviewItem(null)}
-              style={{ width: '100%', background: 'none', border: 'none', color: '#64748b', padding: '0.75rem', cursor: 'pointer', marginTop: '0.6rem', fontSize: '0.85rem' }}
+              style={{ width: '100%', background: 'none', border: 'none', color: '#78716c', padding: '0.75rem', cursor: 'pointer', marginTop: '0.4rem', fontSize: '0.82rem', fontWeight: '700' }}
             >
               Cancel
             </button>
@@ -503,3 +612,4 @@ export default function ApprovalStatus({ history }) {
     </IonPage>
   );
 }
+

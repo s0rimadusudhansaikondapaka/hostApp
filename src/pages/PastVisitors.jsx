@@ -55,48 +55,88 @@ export default function PastVisitors({ history }) {
   return (
     <IonPage>
       <IonHeader className="ion-no-border">
-        <IonToolbar style={{ '--background': '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
+        <IonToolbar style={{ '--background': '#faf6f0', borderBottom: '1px solid #ebdccc' }}>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/home" text="" />
+            <IonBackButton defaultHref="/home" text="" color="dark" />
           </IonButtons>
-          <IonTitle style={{ fontSize: '1.05rem', fontWeight: '800', color: '#0f172a' }}>Past Visitors</IonTitle>
+          <IonTitle style={{ fontSize: '1.05rem', fontWeight: '800', color: '#1c1917' }}>Past Visitors</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent fullscreen className="ion-padding" style={{ '--background': '#f8fafc' }}>
+      <IonContent fullscreen className="ion-padding" style={{ '--background': '#faf6f0' }}>
         <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
           <IonRefresherContent />
         </IonRefresher>
 
-        <p style={{ fontSize: '0.82rem', color: '#64748b', margin: '0.5rem 0 1rem 0' }}>
-          Archived records of past visits to your flat or department.
+        {/* Section Header matching Attachment 1 */}
+        <div className="host-section-header" style={{ marginTop: '0.2rem', marginBottom: '0.9rem' }}>
+          <div className="host-section-title-wrap">
+            <h3 className="host-section-title">Visit Archives</h3>
+            <div className="host-section-underline"></div>
+          </div>
+          <div className="host-section-count">
+            {historyList.length} Archived
+          </div>
+        </div>
+
+        <p style={{ fontSize: '0.8rem', color: '#78716c', margin: '0 0 1rem 0', fontWeight: '500' }}>
+          Archived records of completed or past visits to your flat or department.
         </p>
 
         {historyList.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#64748b' }}>
-            <History size={40} color="#cbd5e1" style={{ marginBottom: '0.5rem' }} />
-            <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 'bold' }}>No past visitor records</p>
-            <span style={{ fontSize: '0.78rem' }}>When visitors complete their visit and check out, their history will appear here.</span>
+          <div style={{ textAlign: 'center', padding: '3rem 1rem', background: '#ffffff', borderRadius: '22px', border: '1.5px dashed #ebdccc', color: '#78716c' }}>
+            <History size={36} color="#d6c7b2" style={{ marginBottom: '0.5rem' }} />
+            <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: '800', color: '#1c1917' }}>No past visitor records</p>
+            <span style={{ fontSize: '0.78rem', color: '#78716c' }}>When visitors complete their visit and check out, their history will appear here.</span>
           </div>
         ) : (
           historyList.map((r, i) => (
             <div
               key={r.id || i}
-              className="host-action-card"
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
+              className="host-visitor-card"
+              style={{ marginBottom: '0.85rem' }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
-                <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '800', color: '#0f172a' }}>
-                  {r.visitor_name}
-                </h4>
-                <span className="host-badge" style={{ background: '#f1f5f9', color: '#475569' }}>
+              <div className="host-visitor-card-header">
+                <span style={{ 
+                  background: '#ffffff', 
+                  border: '1px solid #dbeafe', 
+                  color: '#1e40af', 
+                  borderRadius: '9999px', 
+                  padding: '2px 9px', 
+                  fontSize: '0.7rem', 
+                  fontWeight: '700' 
+                }}>
+                  👤 {r.visitor_category || 'General Visitor'}
+                </span>
+                <span style={{ 
+                  background: '#f5eee6', 
+                  color: '#78716c', 
+                  borderRadius: '9999px', 
+                  padding: '2px 9px', 
+                  fontSize: '0.7rem', 
+                  fontWeight: '700' 
+                }}>
                   {r.status || 'CHECKED_OUT'}
                 </span>
               </div>
-              <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                <div>{r.visitor_phone} • {r.purpose || 'Ashram Visit'}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.2rem' }}>
-                  <Calendar size={13} color="#64748b" />
+              <div className="host-visitor-card-body">
+                <h3 style={{ margin: '0 0 0.2rem 0', fontSize: '1.05rem', fontWeight: '800', color: '#1c1917' }}>
+                  {r.visitor_name}
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.76rem', color: '#78716c' }}>
+                  {r.visitor_phone} • {r.purpose || 'Ashram Visit'}
+                </p>
+                <div style={{ 
+                  borderTop: '1px solid #f5eee6', 
+                  marginTop: '0.65rem', 
+                  paddingTop: '0.55rem', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.35rem', 
+                  fontSize: '0.74rem', 
+                  color: '#57534e' 
+                }}>
+                  <Calendar size={13} color="#b84018" />
                   <span>Visited on: {formatDate(r.valid_from || r.created_at)}</span>
                 </div>
               </div>
@@ -107,3 +147,4 @@ export default function PastVisitors({ history }) {
     </IonPage>
   );
 }
+

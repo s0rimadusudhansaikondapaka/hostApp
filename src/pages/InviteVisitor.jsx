@@ -278,41 +278,55 @@ export default function InviteVisitor({ history }) {
   return (
     <IonPage>
       <IonHeader className="ion-no-border">
-        <IonToolbar style={{ '--background': '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
+        <IonToolbar style={{ '--background': '#faf6f0', borderBottom: '1px solid #ebdccc' }}>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/home" text="" />
+            <IonBackButton defaultHref="/home" text="" color="dark" />
           </IonButtons>
-          <IonTitle style={{ fontSize: '1.05rem', fontWeight: '800', color: '#0f172a' }}>Invite Visitor</IonTitle>
+          <IonTitle style={{ fontSize: '1.05rem', fontWeight: '800', color: '#1c1917' }}>Invite Visitor</IonTitle>
           <IonButtons slot="end">
             <button
               type="button"
               onClick={handleShareInvite}
               disabled={generatingToken}
-              style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#2563eb', borderRadius: '8px', padding: '0.4rem 0.65rem', fontSize: '0.75rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: generatingToken ? 'wait' : 'pointer', marginRight: '0.5rem', opacity: generatingToken ? 0.7 : 1 }}
+              style={{ 
+                background: '#fdede3', 
+                border: '1.5px solid #fed7aa', 
+                color: '#b84018', 
+                borderRadius: '9999px', 
+                padding: '0.4rem 0.8rem', 
+                fontSize: '0.75rem', 
+                fontWeight: '800', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.35rem', 
+                cursor: generatingToken ? 'wait' : 'pointer', 
+                marginRight: '0.5rem', 
+                opacity: generatingToken ? 0.7 : 1 
+              }}
             >
-              <Share2 size={14} /> {generatingToken ? 'Generating...' : 'Share Link'}
+              <Share2 size={13} /> {generatingToken ? 'Generating...' : 'Share Link'}
             </button>
           </IonButtons>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent fullscreen className="ion-padding" style={{ '--background': '#f8fafc' }}>
+      <IonContent fullscreen className="ion-padding" style={{ '--background': '#faf6f0' }}>
         <form onSubmit={handleSubmit} style={{ maxWidth: '600px', margin: '0 auto', paddingBottom: '3rem' }}>
           {error && (
-            <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px', padding: '0.75rem', color: '#b91c1c', fontSize: '0.82rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <div style={{ background: '#fef2f2', border: '1.5px solid #fecaca', borderRadius: '16px', padding: '0.8rem', color: '#b91c1c', fontSize: '0.82rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <AlertCircle size={16} /> {error}
             </div>
           )}
 
           {/* VIP / HOD Direct Pass Privileges Notice */}
           {isVipOrHodHost && (
-            <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '12px', padding: '0.7rem 0.9rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <span style={{ fontSize: '1.2rem' }}>⚡</span>
+            <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: '18px', padding: '0.8rem 1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <span style={{ fontSize: '1.25rem' }}>⚡</span>
               <div>
-                <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#166534' }}>
+                <div style={{ fontSize: '0.84rem', fontWeight: '800', color: '#166534' }}>
                   Direct Gate Pass Generation
                 </div>
-                <div style={{ fontSize: '0.74rem', color: '#15803d' }}>
+                <div style={{ fontSize: '0.75rem', color: '#15803d', fontWeight: '500' }}>
                   As a VIP / HOD Host, your guest invitations are directly approved upon creation with no L2 / PRO verification delay.
                 </div>
               </div>
@@ -320,9 +334,9 @@ export default function InviteVisitor({ history }) {
           )}
 
           {/* Section 1: Visitor Basic Information */}
-          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1rem', marginBottom: '1rem' }}>
-            <h3 style={{ margin: '0 0 0.6rem 0', fontSize: '0.92rem', fontWeight: '800', color: '#1e3a8a' }}>
-              1. Visitor Basic Information
+          <div style={{ background: '#ffffff', border: '1.5px solid #ede5da', borderRadius: '20px', padding: '1.1rem', marginBottom: '1rem', boxShadow: '0 2px 8px rgba(184, 64, 24, 0.04)' }}>
+            <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.92rem', fontWeight: '800', color: '#b84018', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <span>1.</span> Visitor Basic Information
             </h3>
 
             <label className="host-label" style={{ marginTop: 0 }}>Visitor Name *</label>
@@ -403,9 +417,9 @@ export default function InviteVisitor({ history }) {
           </div>
 
           {/* Section 2: Visit Date & Time Window */}
-          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1rem', marginBottom: '1rem' }}>
-            <h3 style={{ margin: '0 0 0.6rem 0', fontSize: '0.92rem', fontWeight: '800', color: '#1e3a8a' }}>
-              2. Visit Schedule (5:00 AM – 10:00 PM)
+          <div style={{ background: '#ffffff', border: '1.5px solid #ede5da', borderRadius: '20px', padding: '1.1rem', marginBottom: '1rem', boxShadow: '0 2px 8px rgba(184, 64, 24, 0.04)' }}>
+            <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.92rem', fontWeight: '800', color: '#b84018', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <span>2.</span> Visit Schedule (5:00 AM – 10:00 PM)
             </h3>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
@@ -427,50 +441,76 @@ export default function InviteVisitor({ history }) {
                   required
                   disabled
                   className="host-input"
-                  style={{ background: '#f1f5f9', cursor: 'not-allowed', color: '#334155' }}
+                  style={{ background: '#f5eee6', cursor: 'not-allowed', color: '#57534e' }}
                   value={validUntil}
                   onChange={(e) => setValidUntil(e.target.value)}
                 />
               </div>
             </div>
-            <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', marginTop: '0.35rem' }}>
+            <span style={{ fontSize: '0.72rem', color: '#78716c', display: 'block', marginTop: '0.4rem', fontWeight: '500' }}>
               * Phase 1 enforces strictly single-day visits (5:00 AM – 10:00 PM). Scheduled departure is auto-computed on the same date and locked.
             </span>
           </div>
 
           {/* Section 3: Group & Accompanying Count */}
-          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1rem', marginBottom: '1rem' }}>
-            <h3 style={{ margin: '0 0 0.6rem 0', fontSize: '0.92rem', fontWeight: '800', color: '#1e3a8a' }}>
-              3. Registration Mode &amp; People Count
+          <div style={{ background: '#ffffff', border: '1.5px solid #ede5da', borderRadius: '20px', padding: '1.1rem', marginBottom: '1rem', boxShadow: '0 2px 8px rgba(184, 64, 24, 0.04)' }}>
+            <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.92rem', fontWeight: '800', color: '#b84018', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <span>3.</span> Registration Mode &amp; People Count
             </h3>
 
             <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '0.8rem' }}>
-              <label style={{ flex: 1, padding: '0.6rem', borderRadius: '8px', border: registrationMode === 'Single' ? '2px solid #2563eb' : '1px solid #cbd5e1', background: registrationMode === 'Single' ? '#eff6ff' : '#ffffff', display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold' }}>
+              <label style={{ 
+                flex: 1, 
+                padding: '0.65rem', 
+                borderRadius: '14px', 
+                border: registrationMode === 'Single' ? '2px solid #b84018' : '1.5px solid #ede5da', 
+                background: registrationMode === 'Single' ? '#fdede3' : '#faf6f0', 
+                color: registrationMode === 'Single' ? '#9a3412' : '#57534e',
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.45rem', 
+                cursor: 'pointer', 
+                fontSize: '0.85rem', 
+                fontWeight: '800' 
+              }}>
                 <input type="radio" name="regMode" value="Single" checked={registrationMode === 'Single'} onChange={() => setRegistrationMode('Single')} />
                 👤 Single Visitor
               </label>
-              <label style={{ flex: 1, padding: '0.6rem', borderRadius: '8px', border: registrationMode === 'Group' ? '2px solid #2563eb' : '1px solid #cbd5e1', background: registrationMode === 'Group' ? '#eff6ff' : '#ffffff', display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold' }}>
+              <label style={{ 
+                flex: 1, 
+                padding: '0.65rem', 
+                borderRadius: '14px', 
+                border: registrationMode === 'Group' ? '2px solid #b84018' : '1.5px solid #ede5da', 
+                background: registrationMode === 'Group' ? '#fdede3' : '#faf6f0', 
+                color: registrationMode === 'Group' ? '#9a3412' : '#57534e',
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.45rem', 
+                cursor: 'pointer', 
+                fontSize: '0.85rem', 
+                fontWeight: '800' 
+              }}>
                 <input type="radio" name="regMode" value="Group" checked={registrationMode === 'Group'} onChange={() => setRegistrationMode('Group')} />
                 👥 Group Visit
               </label>
             </div>
 
             {registrationMode === 'Group' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '0.5rem', background: '#f8fafc', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '0.5rem', background: '#faf6f0', padding: '0.8rem', borderRadius: '14px', border: '1.5px solid #ebdccc' }}>
                 <div>
-                  <label className="host-label" style={{ marginTop: 0, fontSize: '0.75rem' }}>Men (👨)</label>
+                  <label className="host-label" style={{ marginTop: 0, fontSize: '0.72rem' }}>Men (👨)</label>
                   <input type="number" min="0" className="host-input" value={adultMen} onChange={(e) => setAdultMen(e.target.value)} />
                 </div>
                 <div>
-                  <label className="host-label" style={{ marginTop: 0, fontSize: '0.75rem' }}>Women (👩)</label>
+                  <label className="host-label" style={{ marginTop: 0, fontSize: '0.72rem' }}>Women (👩)</label>
                   <input type="number" min="0" className="host-input" value={adultWomen} onChange={(e) => setAdultWomen(e.target.value)} />
                 </div>
                 <div>
-                  <label className="host-label" style={{ marginTop: 0, fontSize: '0.75rem' }}>Boys (👦)</label>
+                  <label className="host-label" style={{ marginTop: 0, fontSize: '0.72rem' }}>Boys (👦)</label>
                   <input type="number" min="0" className="host-input" value={boysCount} onChange={(e) => setBoysCount(e.target.value)} />
                 </div>
                 <div>
-                  <label className="host-label" style={{ marginTop: 0, fontSize: '0.75rem' }}>Girls (👧)</label>
+                  <label className="host-label" style={{ marginTop: 0, fontSize: '0.72rem' }}>Girls (👧)</label>
                   <input type="number" min="0" className="host-input" value={girlsCount} onChange={(e) => setGirlsCount(e.target.value)} />
                 </div>
               </div>
@@ -478,28 +518,28 @@ export default function InviteVisitor({ history }) {
           </div>
 
           {/* Section 4: Vehicles (Up to 5) */}
-          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1rem', marginBottom: '1rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
-              <h3 style={{ margin: 0, fontSize: '0.92rem', fontWeight: '800', color: '#1e3a8a' }}>
-                4. Vehicle Details (Up to 5)
+          <div style={{ background: '#ffffff', border: '1.5px solid #ede5da', borderRadius: '20px', padding: '1.1rem', marginBottom: '1rem', boxShadow: '0 2px 8px rgba(184, 64, 24, 0.04)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <h3 style={{ margin: 0, fontSize: '0.92rem', fontWeight: '800', color: '#b84018', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <span>4.</span> Vehicle Details (Up to 5)
               </h3>
               {vehicles.length < 5 && (
                 <button
                   type="button"
                   onClick={addVehicle}
-                  style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#2563eb', borderRadius: '6px', padding: '0.25rem 0.5rem', fontSize: '0.75rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.2rem', cursor: 'pointer' }}
+                  style={{ background: '#fdede3', border: '1.5px solid #fed7aa', color: '#b84018', borderRadius: '9999px', padding: '0.3rem 0.65rem', fontSize: '0.72rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer' }}
                 >
-                  <Plus size={14} /> Add Vehicle ({vehicles.length}/5)
+                  <Plus size={13} /> Add Vehicle ({vehicles.length}/5)
                 </button>
               )}
             </div>
 
             {vehicles.map((veh, idx) => (
-              <div key={idx} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.6rem', marginBottom: '0.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
-                  <span style={{ fontSize: '0.78rem', fontWeight: 'bold', color: '#334155' }}>Vehicle #{idx + 1}</span>
+              <div key={idx} style={{ background: '#faf6f0', border: '1.5px solid #ede5da', borderRadius: '14px', padding: '0.7rem', marginBottom: '0.55rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                  <span style={{ fontSize: '0.76rem', fontWeight: '800', color: '#57534e' }}>Vehicle #{idx + 1}</span>
                   {vehicles.length > 1 && (
-                    <button type="button" onClick={() => removeVehicle(idx)} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', padding: 0 }}>
+                    <button type="button" onClick={() => removeVehicle(idx)} style={{ background: 'none', border: 'none', color: '#b91c1c', cursor: 'pointer', padding: 0 }}>
                       <Trash2 size={15} />
                     </button>
                   )}
@@ -527,28 +567,46 @@ export default function InviteVisitor({ history }) {
           </div>
 
           {/* Section 5: Accommodation & Remarks */}
-          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem' }}>
-            <h3 style={{ margin: '0 0 0.6rem 0', fontSize: '0.92rem', fontWeight: '800', color: '#1e3a8a' }}>
-              5. Accommodation &amp; Remarks
+          <div style={{ background: '#ffffff', border: '1.5px solid #ede5da', borderRadius: '20px', padding: '1.1rem', marginBottom: '1.5rem', boxShadow: '0 2px 8px rgba(184, 64, 24, 0.04)' }}>
+            <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.92rem', fontWeight: '800', color: '#b84018', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <span>5.</span> Accommodation &amp; Remarks
             </h3>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f8fafc', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '0.8rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#faf6f0', padding: '0.8rem', borderRadius: '14px', border: '1.5px solid #ede5da', marginBottom: '0.8rem' }}>
               <div>
-                <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#0f172a' }}>Accommodation Required?</span>
-                <p style={{ margin: 0, fontSize: '0.72rem', color: '#64748b' }}>Overnight ashram room stay approval</p>
+                <span style={{ fontSize: '0.84rem', fontWeight: '800', color: '#1c1917' }}>Accommodation Required?</span>
+                <p style={{ margin: 0, fontSize: '0.72rem', color: '#78716c' }}>Overnight ashram room stay approval</p>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <button
                   type="button"
                   onClick={() => setAccommodationRequired(true)}
-                  style={{ padding: '0.35rem 0.75rem', borderRadius: '20px', border: accommodationRequired ? '2px solid #2563eb' : '1px solid #cbd5e1', background: accommodationRequired ? '#2563eb' : '#ffffff', color: accommodationRequired ? '#ffffff' : '#475569', fontWeight: 'bold', fontSize: '0.78rem', cursor: 'pointer' }}
+                  style={{ 
+                    padding: '0.4rem 0.85rem', 
+                    borderRadius: '9999px', 
+                    border: accommodationRequired ? '2px solid #b84018' : '1.5px solid #ede5da', 
+                    background: accommodationRequired ? '#b84018' : '#ffffff', 
+                    color: accommodationRequired ? '#ffffff' : '#57534e', 
+                    fontWeight: '800', 
+                    fontSize: '0.76rem', 
+                    cursor: 'pointer' 
+                  }}
                 >
                   Yes
                 </button>
                 <button
                   type="button"
                   onClick={() => setAccommodationRequired(false)}
-                  style={{ padding: '0.35rem 0.75rem', borderRadius: '20px', border: !accommodationRequired ? '2px solid #0f172a' : '1px solid #cbd5e1', background: !accommodationRequired ? '#0f172a' : '#ffffff', color: !accommodationRequired ? '#ffffff' : '#475569', fontWeight: 'bold', fontSize: '0.78rem', cursor: 'pointer' }}
+                  style={{ 
+                    padding: '0.4rem 0.85rem', 
+                    borderRadius: '9999px', 
+                    border: !accommodationRequired ? '2px solid #1c1917' : '1.5px solid #ede5da', 
+                    background: !accommodationRequired ? '#1c1917' : '#ffffff', 
+                    color: !accommodationRequired ? '#ffffff' : '#57534e', 
+                    fontWeight: '800', 
+                    fontSize: '0.76rem', 
+                    cursor: 'pointer' 
+                  }}
                 >
                   No
                 </button>
@@ -565,13 +623,13 @@ export default function InviteVisitor({ history }) {
             />
           </div>
 
-          {/* Action Buttons matching wireframe Screen 3 */}
+          {/* Action Buttons */}
           <div style={{ display: 'flex', gap: '0.8rem' }}>
             <button
               type="button"
               onClick={handleReset}
               className="host-btn-outline"
-              style={{ flex: 1, padding: '0.75rem', cursor: 'pointer' }}
+              style={{ flex: 1, padding: '0.85rem', cursor: 'pointer' }}
             >
               Reset
             </button>
@@ -579,65 +637,66 @@ export default function InviteVisitor({ history }) {
               type="submit"
               disabled={submitting}
               className="host-btn-primary"
-              style={{ flex: 1, padding: '0.75rem', border: 'none', cursor: 'pointer' }}
+              style={{ flex: 1.5, padding: '0.85rem', cursor: 'pointer' }}
             >
-              {submitting ? 'Submitting...' : 'Submit Invite'}
+              {submitting ? 'Submitting...' : 'Submit Visitor Invitation'}
             </button>
           </div>
         </form>
 
-        {/* WhatsApp / Email Invite Link Modal */}
+        {/* WhatsApp / Email Invite Link Modal matching Attachment 3 */}
         <IonModal isOpen={showShareModal} onDidDismiss={() => setShowShareModal(false)}>
-          <div style={{ padding: '1.5rem', background: '#ffffff', height: '100%' }}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#0f172a', margin: '0 0 0.4rem 0' }}>
-              Share Pre-Approval Guest Invite Link
-            </h2>
-            <p style={{ fontSize: '0.82rem', color: '#64748b', lineHeight: '1.4', margin: '0 0 1.2rem 0' }}>
-              Share this single-use link directly with your guest. They can fill out their details and vehicle information before arrival.
+          <div style={{ padding: '1.5rem', background: '#ffffff', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            {/* Modal Header */}
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem', borderBottom: '1.5px solid #f0e6da', paddingBottom: '0.6rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Share2 size={20} color="#b84018" />
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: '800', color: '#1c1917' }}>Share Pre-Approval Link</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowShareModal(false)}
+                style={{ background: '#f5eee6', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#57534e', fontWeight: 'bold' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Pill Badge matching Attachment 3 */}
+            <div style={{ 
+              background: '#fdede3', 
+              color: '#b84018', 
+              borderRadius: '9999px', 
+              padding: '4px 14px', 
+              fontSize: '0.74rem', 
+              fontWeight: '800',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              marginBottom: '0.8rem'
+            }}>
+              <span>✦</span> PRE-REGISTRATION PASS LINK
+            </div>
+
+            <p style={{ fontSize: '0.82rem', color: '#78716c', lineHeight: '1.45', margin: '0 0 1rem 0' }}>
+              Share this dedicated link with your guest. They can fill out their vehicle and visitor details prior to arriving at the gate.
             </p>
 
-            <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '0.75rem', fontSize: '0.78rem', wordBreak: 'break-all', color: '#1e293b', marginBottom: '1.2rem' }}>
+            <div style={{ width: '100%', background: '#faf6f0', border: '1.5px solid #ede5da', borderRadius: '16px', padding: '0.85rem', fontSize: '0.76rem', wordBreak: 'break-all', color: '#1c1917', marginBottom: '1.2rem', fontWeight: '600' }}>
               {inviteLink}
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(`Jay Sai Ram! Please fill out your visitor pre-approval registration form for Sathya Sai Grama using this link: ${inviteLink}`)}`}
                 target="_blank"
                 rel="noreferrer"
                 style={{ textDecoration: 'none' }}
               >
-                <button type="button" style={{ width: '100%', background: '#25d366', border: 'none', color: 'white', fontWeight: 'bold', fontSize: '0.88rem', padding: '0.75rem', borderRadius: '9999px', cursor: 'pointer' }}>
+                <button type="button" style={{ width: '100%', background: '#25d366', border: 'none', color: 'white', fontWeight: '800', fontSize: '0.88rem', padding: '0.85rem', borderRadius: '9999px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', boxShadow: '0 4px 12px rgba(37, 211, 102, 0.25)' }}>
                   📲 Share via WhatsApp
                 </button>
               </a>
-
-              <a
-                href={`mailto:?subject=${encodeURIComponent('Sathya Sai Grama - Visitor Pre-Approval Invite')}&body=${encodeURIComponent(`Jay Sai Ram!\n\nPlease fill out your visitor registration using this link prior to your arrival:\n\n${inviteLink}\n\nThank you!`)}`}
-                style={{ textDecoration: 'none' }}
-              >
-                <button type="button" style={{ width: '100%', background: '#2563eb', border: 'none', color: 'white', fontWeight: 'bold', fontSize: '0.88rem', padding: '0.75rem', borderRadius: '9999px', cursor: 'pointer' }}>
-                  ✉️ Share via Email
-                </button>
-              </a>
-
-              {navigator.share && (
-                <button
-                  type="button"
-                  onClick={async () => {
-                    try {
-                      await navigator.share({
-                        title: 'Sathya Sai Grama - Visitor Invite',
-                        text: `Jay Sai Ram! Please fill out your visitor pre-approval registration form for Sathya Sai Grama using this link: ${inviteLink}`,
-                        url: inviteLink,
-                      });
-                    } catch (e) {}
-                  }}
-                  style={{ width: '100%', background: '#0f172a', border: 'none', color: 'white', fontWeight: 'bold', fontSize: '0.88rem', padding: '0.75rem', borderRadius: '9999px', cursor: 'pointer' }}
-                >
-                  🔗 Share via Other Apps
-                </button>
-              )}
 
               <button
                 type="button"
@@ -645,8 +704,8 @@ export default function InviteVisitor({ history }) {
                   navigator.clipboard.writeText(inviteLink);
                   setToastMsg('Invite link copied to clipboard!');
                 }}
-                className="host-btn-outline"
-                style={{ width: '100%', padding: '0.75rem', cursor: 'pointer', marginTop: '0.4rem' }}
+                className="host-btn-primary"
+                style={{ width: '100%', padding: '0.85rem', cursor: 'pointer' }}
               >
                 📋 Copy Link
               </button>
@@ -654,9 +713,9 @@ export default function InviteVisitor({ history }) {
               <button
                 type="button"
                 onClick={() => setShowShareModal(false)}
-                style={{ background: 'none', border: 'none', color: '#64748b', padding: '0.5rem', cursor: 'pointer', marginTop: '0.5rem', fontSize: '0.85rem' }}
+                style={{ background: 'transparent', border: 'none', color: '#78716c', padding: '0.6rem', cursor: 'pointer', fontSize: '0.82rem', fontWeight: '700' }}
               >
-                Close
+                Done / Close
               </button>
             </div>
           </div>
@@ -667,3 +726,4 @@ export default function InviteVisitor({ history }) {
     </IonPage>
   );
 }
+

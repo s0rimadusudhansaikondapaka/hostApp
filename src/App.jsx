@@ -50,26 +50,26 @@ export default function App() {
               </Route>
             </IonRouterOutlet>
 
-            {/* Bottom Tab Bar matching Wireframe Screen 2 */}
-            <IonTabBar slot="bottom" style={{ '--background': '#ffffff', borderTop: '1px solid #e2e8f0', height: '58px' }}>
+            {/* Bottom Tab Bar matching Seva / Host Mobile Design */}
+            <IonTabBar slot="bottom" style={{ '--background': '#ffffff', borderTop: '1.5px solid #f0e6da', height: '62px' }}>
               <IonTabButton tab="home" href="/home">
-                <IonIcon icon={homeOutline} color="primary" />
-                <IonLabel style={{ fontSize: '0.72rem', fontWeight: 'bold' }}>Home</IonLabel>
+                <IonIcon icon={homeOutline} />
+                <IonLabel>Home</IonLabel>
               </IonTabButton>
 
               <IonTabButton tab="invite" href="/invite-visitor">
-                <IonIcon icon={personAddOutline} color="primary" />
-                <IonLabel style={{ fontSize: '0.72rem', fontWeight: 'bold' }}>Invite</IonLabel>
+                <IonIcon icon={personAddOutline} />
+                <IonLabel>Invite</IonLabel>
               </IonTabButton>
 
               <IonTabButton tab="approvals" href="/approval-status">
-                <IonIcon icon={checkmarkCircleOutline} color="primary" />
-                <IonLabel style={{ fontSize: '0.72rem', fontWeight: 'bold' }}>Approvals</IonLabel>
+                <IonIcon icon={checkmarkCircleOutline} />
+                <IonLabel>Approvals</IonLabel>
               </IonTabButton>
 
               <IonTabButton tab="profile" href="/profile">
-                <IonIcon icon={personOutline} color="primary" />
-                <IonLabel style={{ fontSize: '0.72rem', fontWeight: 'bold' }}>Profile</IonLabel>
+                <IonIcon icon={personOutline} />
+                <IonLabel>Profile</IonLabel>
               </IonTabButton>
             </IonTabBar>
           </IonTabs>

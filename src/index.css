@@ -12,85 +12,335 @@
 
 * {
   box-sizing: border-box;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Wireframe Button Styles */
+body {
+  background-color: #faf6f0;
+  color: #1c1917;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Warm Terracotta Buttons matching Attachment */
 .host-btn-primary {
-  background: #0f172a !important;
+  background: linear-gradient(135deg, #c84a1a 0%, #b43403 50%, #9a3412 100%) !important;
   color: #ffffff !important;
+  border: none !important;
   border-radius: 9999px !important;
-  font-weight: 600 !important;
-  font-size: 0.92rem !important;
-  letter-spacing: 0.02em;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 0.01em;
   text-transform: none !important;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
+  box-shadow: 0 4px 14px rgba(184, 64, 24, 0.28) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.host-btn-primary:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 6px rgba(184, 64, 24, 0.2) !important;
 }
 
 .host-btn-outline {
   background: #ffffff !important;
-  color: #0f172a !important;
-  border: 1.5px solid #0f172a !important;
+  color: #b84018 !important;
+  border: 1.5px solid #ebdccc !important;
   border-radius: 9999px !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   font-size: 0.92rem !important;
   text-transform: none !important;
 }
 
-/* Card Styling matching wireframe */
-.host-action-card {
+/* Top Profile Hero Card matching Attachment 2 */
+.host-hero-banner {
+  background: linear-gradient(135deg, #c84a1a 0%, #b43403 50%, #9a3412 100%);
+  border-radius: 26px;
+  padding: 1.3rem 1.4rem;
+  color: #ffffff;
+  box-shadow: 0 8px 24px rgba(184, 64, 24, 0.22);
+  position: relative;
+  overflow: hidden;
+}
+
+.host-hero-banner::after {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+  pointer-events: none;
+}
+
+/* Motivational Seva Card matching Attachment 2 */
+.host-seva-card {
+  background: #fff8f0;
+  border: 1.5px solid #fed7aa;
+  border-radius: 20px;
+  padding: 1rem 1.15rem;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  box-shadow: 0 2px 8px rgba(184, 64, 24, 0.05);
+}
+
+/* 2x2 Action Tiles Grid matching Attachment 2 */
+.host-tiles-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.host-tile-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  padding: 1rem 1.1rem;
-  margin-bottom: 0.85rem;
+  border: 1.5px solid #ede3d4;
+  border-radius: 22px;
+  padding: 1.15rem 0.85rem;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.host-tile-card:active {
+  transform: scale(0.97);
+  border-color: #c2410c;
+  background: #fffbf7;
+}
+
+.host-tile-icon-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.65rem;
+  transition: transform 0.2s ease;
+}
+
+.icon-circle-peach {
+  background: #fdede3;
+  color: #c2410c;
+}
+
+.icon-circle-blue {
+  background: #eaf0fa;
+  color: #2563eb;
+}
+
+.icon-circle-amber {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.icon-circle-green {
+  background: #eaf7f0;
+  color: #15803d;
+}
+
+/* Search Bar matching Attachment 1 & 2 */
+.host-search-container {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1.5px solid #ebdccc;
+  border-radius: 9999px;
+  padding: 0.55rem 0.95rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  margin-top: 1.1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.host-search-container:focus-within {
+  border-color: #b84018;
+  box-shadow: 0 0 0 3px rgba(184, 64, 24, 0.12);
+}
+
+.host-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.88rem;
+  color: #1c1917;
+  padding: 0 0.6rem;
+  font-weight: 500;
+}
+
+.host-search-input::placeholder {
+  color: #a8a29e;
+}
+
+.host-search-divider {
+  width: 1px;
+  height: 20px;
+  background: #e7d5c3;
+  margin: 0 0.5rem;
+}
+
+/* Horizontal Filter Chips matching Attachment 1 */
+.host-chips-row {
+  display: flex;
+  gap: 0.55rem;
+  overflow-x: auto;
+  padding: 0.85rem 0 0.35rem 0;
+  scrollbar-width: none;
+}
+
+.host-chips-row::-webkit-scrollbar {
+  display: none;
+}
+
+.host-filter-chip {
+  flex-shrink: 0;
+  border-radius: 9999px;
+  padding: 0.45rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: #ffffff;
+  color: #57534e;
+  border: 1.5px solid #ebdccc;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s ease;
+}
+
+.host-filter-chip.active {
+  background: #b84018;
+  color: #ffffff;
+  border-color: #b84018;
+  box-shadow: 0 2px 8px rgba(184, 64, 24, 0.25);
+}
+
+/* Section Header matching Attachment 1 */
+.host-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin: 1.2rem 0 0.8rem 0;
+}
+
+.host-section-title-wrap {
+  position: relative;
+}
+
+.host-section-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1c1917;
+  letter-spacing: -0.01em;
+}
+
+.host-section-underline {
+  width: 32px;
+  height: 3.5px;
+  background: #b84018;
+  border-radius: 3px;
+  margin-top: 4px;
+}
+
+.host-section-count {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #b84018;
+}
+
+/* Visitor Cards matching Attachment 1 */
+.host-visitor-card {
+  background: #ffffff;
+  border: 1.5px solid #ede3d4;
+  border-radius: 22px;
+  overflow: hidden;
+  margin-bottom: 0.95rem;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.host-visitor-card:active {
+  transform: scale(0.985);
+  border-color: #b84018;
+}
+
+.host-visitor-card-header {
+  background: #f0f6fc;
+  padding: 0.65rem 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid #e2eef8;
 }
 
-.host-action-card:active {
-  transform: scale(0.98);
-  border-color: #2563eb;
-  background: #f8fafc;
+.host-visitor-card-body {
+  padding: 0.95rem 1.1rem;
 }
 
-/* Clean Form inputs */
+/* Clean Form inputs with warm aesthetic */
 .host-input {
   width: 100%;
-  padding: 0.7rem 0.9rem;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 10px;
+  padding: 0.75rem 0.95rem;
+  border: 1.5px solid #ebdccc;
+  border-radius: 14px;
   font-size: 0.9rem;
-  color: #0f172a;
+  color: #1c1917;
   background-color: #ffffff;
   transition: border-color 0.2s, box-shadow 0.2s;
   outline: none;
+  font-family: inherit;
 }
 
 .host-input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  border-color: #b84018;
+  box-shadow: 0 0 0 3px rgba(184, 64, 24, 0.14);
 }
 
 .host-label {
   display: block;
   font-size: 0.82rem;
-  font-weight: 600;
-  color: #475569;
+  font-weight: 700;
+  color: #44403c;
   margin-bottom: 0.35rem;
   margin-top: 0.75rem;
 }
 
-/* Badge styling */
-.host-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.25rem 0.65rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 700;
+/* Bottom Tab Bar matching Attachment 1 & 2 */
+ion-tab-bar {
+  --background: #ffffff !important;
+  border-top: 1.5px solid #f0e6da !important;
+  height: 64px !important;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.03) !important;
+}
+
+ion-tab-button {
+  --color: #78716c !important;
+  --color-selected: #b84018 !important;
+}
+
+ion-tab-button.tab-selected ion-icon {
+  background: #fdede3;
+  color: #b84018 !important;
+  border-radius: 14px;
+  padding: 3px 14px;
+}
+
+ion-tab-button ion-label {
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  margin-top: 2px !important;
 }

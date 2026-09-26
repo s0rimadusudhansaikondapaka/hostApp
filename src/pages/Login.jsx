@@ -67,18 +67,30 @@ export default function Login({ history }) {
 
   return (
     <IonPage>
-      <IonContent fullscreen className="ion-padding" style={{ '--background': '#ffffff' }}>
-        <div style={{ maxWidth: '400px', margin: '2rem auto 1rem auto', textAlign: 'center' }}>
-          {/* Header matching Wireframe Screen 1 */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '56px', height: '56px', borderRadius: '16px', background: '#1e3a8a', color: 'white', marginBottom: '0.75rem', boxShadow: '0 4px 14px rgba(30,58,138,0.25)' }}>
-            <ShieldCheck size={32} />
+      <IonContent fullscreen className="ion-padding" style={{ '--background': '#faf6f0' }}>
+        <div style={{ maxWidth: '420px', margin: '2.5rem auto 1.5rem auto', textAlign: 'center' }}>
+          
+          {/* Header matching Attachment 2 & 3 */}
+          <div style={{ 
+            display: 'inline-flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            width: '64px', 
+            height: '64px', 
+            borderRadius: '22px', 
+            background: 'linear-gradient(135deg, #c84a1a 0%, #b43403 50%, #9a3412 100%)', 
+            color: 'white', 
+            marginBottom: '0.85rem', 
+            boxShadow: '0 8px 24px rgba(184, 64, 24, 0.3)' 
+          }}>
+            <ShieldCheck size={36} />
           </div>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: '800', color: '#0f172a', margin: '0 0 0.25rem 0' }}>Ashram Host</h1>
-          <p style={{ fontSize: '0.82rem', color: '#64748b', margin: '0 0 1.8rem 0' }}>Manage safe &amp; secure with devotion</p>
+          <h1 style={{ fontSize: '1.75rem', fontWeight: '800', color: '#1c1917', margin: '0 0 0.25rem 0', letterSpacing: '-0.02em' }}>Ashram Host</h1>
+          <p style={{ fontSize: '0.84rem', color: '#78716c', margin: '0 0 1.8rem 0', fontWeight: '500' }}>Manage safe &amp; secure visitor access with devotion</p>
 
-          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '1.5rem', textAlign: 'left' }}>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#0f172a', margin: '0 0 0.25rem 0' }}>Welcome back!</h2>
-            <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0 0 1.2rem 0' }}>Login to manage guest invites and approvals</p>
+          <div style={{ background: '#ffffff', border: '1.5px solid #ede5da', borderRadius: '24px', padding: '1.6rem', textAlign: 'left', boxShadow: '0 4px 20px rgba(184, 64, 24, 0.05)' }}>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#1c1917', margin: '0 0 0.25rem 0' }}>Welcome back!</h2>
+            <p style={{ fontSize: '0.8rem', color: '#78716c', margin: '0 0 1.2rem 0' }}>Login to manage guest invites and approvals</p>
 
             <form onSubmit={handleLogin}>
               <label className="host-label" style={{ marginTop: 0 }}>
@@ -93,7 +105,7 @@ export default function Login({ history }) {
                   onChange={(e) => setPhoneOrEmail(e.target.value)}
                   required
                 />
-                <Smartphone size={18} color="#94a3b8" style={{ position: 'absolute', right: '12px', top: '12px' }} />
+                <Smartphone size={18} color="#a8a29e" style={{ position: 'absolute', right: '14px', top: '13px' }} />
               </div>
 
               {isOtpMode ? (
@@ -103,7 +115,7 @@ export default function Login({ history }) {
                     <button
                       type="button"
                       onClick={handleSendOtp}
-                      style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: '0.78rem', fontWeight: 'bold', cursor: 'pointer', padding: 0 }}
+                      style={{ background: 'none', border: 'none', color: '#b84018', fontSize: '0.78rem', fontWeight: '800', cursor: 'pointer', padding: 0 }}
                     >
                       {otpSent ? 'Resend OTP' : 'Send Code'}
                     </button>
@@ -116,7 +128,7 @@ export default function Login({ history }) {
                       value={otp}
                       onChange={(e) => setOtp(e.target.value)}
                     />
-                    <Lock size={18} color="#94a3b8" style={{ position: 'absolute', right: '12px', top: '12px' }} />
+                    <Lock size={18} color="#a8a29e" style={{ position: 'absolute', right: '14px', top: '13px' }} />
                   </div>
                 </div>
               ) : (
@@ -131,7 +143,7 @@ export default function Login({ history }) {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                     />
-                    <Lock size={18} color="#94a3b8" style={{ position: 'absolute', right: '12px', top: '12px' }} />
+                    <Lock size={18} color="#a8a29e" style={{ position: 'absolute', right: '14px', top: '13px' }} />
                   </div>
                 </div>
               )}
@@ -140,16 +152,16 @@ export default function Login({ history }) {
                 type="submit"
                 disabled={loading}
                 className="host-btn-primary"
-                style={{ width: '100%', padding: '0.8rem', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                style={{ width: '100%', padding: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
               >
-                {loading ? 'Please wait...' : 'Login'} <ArrowRight size={18} />
+                {loading ? 'Please wait...' : 'Login to Ashram Host'} <ArrowRight size={18} />
               </button>
 
-              <div style={{ textAlign: 'center', marginTop: '0.9rem' }}>
+              <div style={{ textAlign: 'center', marginTop: '1rem' }}>
                 <button
                   type="button"
                   onClick={() => setIsOtpMode(!isOtpMode)}
-                  style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.78rem', cursor: 'pointer', textDecoration: 'underline' }}
+                  style={{ background: 'none', border: 'none', color: '#78716c', fontSize: '0.78rem', cursor: 'pointer', textDecoration: 'underline', fontWeight: '600' }}
                 >
                   {isOtpMode ? 'Switch to Password Login' : 'Switch to Mobile OTP Login'}
                 </button>
@@ -159,10 +171,10 @@ export default function Login({ history }) {
 
           {/* Quick Demo Host Login Buttons */}
           <div style={{ marginTop: '1.8rem', textAlign: 'left' }}>
-            <span style={{ fontSize: '0.78rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <span style={{ fontSize: '0.76rem', fontWeight: '800', color: '#78716c', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               Select Host Profile to test
             </span>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.5rem', marginTop: '0.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.5rem', marginTop: '0.6rem' }}>
               {DEMO_HOSTS.map((h) => (
                 <button
                   key={h.id}
@@ -170,21 +182,22 @@ export default function Login({ history }) {
                   onClick={() => handleSelectDemo(h)}
                   style={{
                     background: '#ffffff',
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '10px',
-                    padding: '0.65rem 0.85rem',
+                    border: '1.5px solid #ede5da',
+                    borderRadius: '16px',
+                    padding: '0.75rem 0.95rem',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     cursor: 'pointer',
                     textAlign: 'left',
+                    boxShadow: '0 2px 6px rgba(184, 64, 24, 0.03)'
                   }}
                 >
                   <div>
-                    <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#0f172a' }}>{h.name}</div>
-                    <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{h.department} • {h.unit_number}</div>
+                    <div style={{ fontSize: '0.86rem', fontWeight: '800', color: '#1c1917' }}>{h.name}</div>
+                    <div style={{ fontSize: '0.73rem', color: '#78716c', marginTop: '0.1rem' }}>{h.department} • {h.unit_number}</div>
                   </div>
-                  <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 'bold' }}>
+                  <span style={{ background: '#fdede3', color: '#b84018', border: '1px solid #fed7aa', padding: '0.2rem 0.6rem', borderRadius: '9999px', fontSize: '0.7rem', fontWeight: '800' }}>
                     {h.role}
                   </span>
                 </button>
@@ -202,4 +215,5 @@ export default function Login({ history }) {
       </IonContent>
     </IonPage>
   );
+
 }

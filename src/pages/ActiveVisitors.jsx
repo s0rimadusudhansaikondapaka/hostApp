@@ -51,63 +51,130 @@ export default function ActiveVisitors({ history }) {
   return (
     <IonPage>
       <IonHeader className="ion-no-border">
-        <IonToolbar style={{ '--background': '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
+        <IonToolbar style={{ '--background': '#faf6f0', borderBottom: '1px solid #ebdccc' }}>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/home" text="" />
+            <IonBackButton defaultHref="/home" text="" color="dark" />
           </IonButtons>
-          <IonTitle style={{ fontSize: '1.05rem', fontWeight: '800', color: '#0f172a' }}>Active Visitors</IonTitle>
+          <IonTitle style={{ fontSize: '1.05rem', fontWeight: '800', color: '#1c1917' }}>Active Visitors</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent fullscreen className="ion-padding" style={{ '--background': '#f8fafc' }}>
+      <IonContent fullscreen className="ion-padding" style={{ '--background': '#faf6f0' }}>
         <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
           <IonRefresherContent />
         </IonRefresher>
 
-        <p style={{ fontSize: '0.82rem', color: '#64748b', margin: '0.5rem 0 1rem 0' }}>
+        {/* Section Header matching Attachment 1 */}
+        <div className="host-section-header" style={{ marginTop: '0.2rem', marginBottom: '0.9rem' }}>
+          <div className="host-section-title-wrap">
+            <h3 className="host-section-title">Active Inside Campus</h3>
+            <div className="host-section-underline"></div>
+          </div>
+          <div className="host-section-count">
+            {activeList.length} Active
+          </div>
+        </div>
+
+        <p style={{ fontSize: '0.8rem', color: '#78716c', margin: '0 0 1rem 0', fontWeight: '500' }}>
           Visitors currently inside campus or approved and expected to arrive today.
         </p>
 
         {activeList.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#64748b' }}>
-            <Users size={40} color="#cbd5e1" style={{ marginBottom: '0.5rem' }} />
-            <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 'bold' }}>No active visitors currently</p>
-            <span style={{ fontSize: '0.78rem' }}>When your invited visitors are approved or enter the gate, they will appear here.</span>
+          <div style={{ textAlign: 'center', padding: '3rem 1rem', background: '#ffffff', borderRadius: '22px', border: '1.5px dashed #ebdccc', color: '#78716c' }}>
+            <Users size={36} color="#d6c7b2" style={{ marginBottom: '0.5rem' }} />
+            <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: '800', color: '#1c1917' }}>No active visitors currently</p>
+            <span style={{ fontSize: '0.78rem', color: '#78716c' }}>When your invited visitors are approved or enter the gate, they will appear here.</span>
           </div>
         ) : (
-          activeList.map((r) => (
-            <div
-              key={r.id}
-              className="host-action-card"
-              onClick={() => history.push(`/visitor-details/${r.pass_code || r.id}`)}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#dcfce7', color: '#15803d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                    {r.visitor_name ? r.visitor_name.charAt(0).toUpperCase() : 'V'}
-                  </div>
-                  <div>
-                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '800', color: '#0f172a' }}>{r.visitor_name}</h4>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{r.visitor_phone}</span>
-                  </div>
-                </div>
-                <span className="host-badge" style={{ background: r.status === 'INSIDE_CAMPUS' ? '#e0e7ff' : '#dcfce7', color: r.status === 'INSIDE_CAMPUS' ? '#3730a3' : '#15803d' }}>
-                  {r.status === 'INSIDE_CAMPUS' ? '🏢 Inside' : '✓ Approved'}
-                </span>
-              </div>
+          activeList.map((r) => {
+            const isInside = r.status === 'INSIDE_CAMPUS';
 
-              <div style={{ fontSize: '0.78rem', color: '#475569', lineHeight: '1.4' }}>
-                <div><strong>Purpose:</strong> {r.purpose || 'Ashram Visit'}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.2rem' }}>
-                  <Calendar size={13} color="#64748b" />
-                  <span>Valid until: {formatDate(r.valid_until)}</span>
+            return (
+              <div
+                key={r.id}
+                className="host-visitor-card"
+                onClick={() => history.push(`/visitor-details/${r.pass_code || r.id}`)}
+                style={{ marginBottom: '0.85rem' }}
+              >
+                {/* Top Bar with pastel sky-blue tint matching attachment */}
+                <div className="host-visitor-card-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <span style={{ 
+                      background: '#ffffff', 
+                      border: '1px solid #dbeafe', 
+                      color: '#1e40af', 
+                      borderRadius: '9999px', 
+                      padding: '2px 9px', 
+                      fontSize: '0.7rem', 
+                      fontWeight: '700'
+                    }}>
+                      👤 {r.visitor_category === 'FAMILY_MEMBER' ? 'Family Member' : r.visitor_category === 'VIP' ? 'VIP Guest' : 'General Visitor'}
+                    </span>
+
+                    <span style={{ 
+                      background: isInside ? '#dcfce7' : '#e0f2fe', 
+                      color: isInside ? '#15803d' : '#0369a1', 
+                      borderRadius: '9999px', 
+                      padding: '2px 9px', 
+                      fontSize: '0.7rem', 
+                      fontWeight: '700'
+                    }}>
+                      • {isInside ? 'SERVING' : 'APPROVED'}
+                    </span>
+                  </div>
+
+                  <div style={{ 
+                    width: '26px', 
+                    height: '26px', 
+                    borderRadius: '50%', 
+                    background: '#ffffff', 
+                    border: '1px solid #e2e8f0', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    color: '#64748b'
+                  }}>
+                    <ChevronRight size={14} />
+                  </div>
+                </div>
+
+                {/* Body matching Attachment 1 */}
+                <div className="host-visitor-card-body">
+                  <h3 style={{ margin: '0 0 0.2rem 0', fontSize: '1.05rem', fontWeight: '800', color: '#1c1917' }}>
+                    {r.visitor_name}
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '0.76rem', color: '#78716c' }}>
+                    Pass: <strong>{r.pass_code || `#${r.id}`}</strong> • {r.visitor_phone}
+                  </p>
+                  <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.76rem', color: '#57534e' }}>
+                    <strong>Purpose:</strong> {r.purpose || 'Ashram Visit'}
+                  </p>
+
+                  <div style={{ 
+                    borderTop: '1px solid #f5eee6', 
+                    marginTop: '0.65rem', 
+                    paddingTop: '0.55rem', 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    fontSize: '0.74rem', 
+                    color: '#57534e' 
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <Calendar size={13} color="#b84018" />
+                      <span>Valid until: {formatDate(r.valid_until)}</span>
+                    </div>
+                    <div style={{ fontWeight: '700', color: '#1c1917' }}>
+                      {r.person_count || 1} Guests
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </IonContent>
     </IonPage>
   );
 }
+
