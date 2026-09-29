@@ -9,8 +9,9 @@ import {
   IonBackButton,
   IonToast,
   IonModal,
+  IonAlert,
 } from '@ionic/react';
-import { useAuth, DEMO_HOSTS } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import {
   getResidentFamilyMembers,
   addResidentFamilyMember,
@@ -24,7 +25,7 @@ import { User, Users, Plus, Trash2, Globe, LogOut, Shield, Home, Building, QrCod
 import QRCode from 'qrcode';
 
 export default function ProfileSettings({ history }) {
-  const { user, selectDemoHost, logout } = useAuth();
+  const { user, logout } = useAuth();
   const [familyMembers, setFamilyMembers] = useState([]);
   const [showAddFamilyModal, setShowAddFamilyModal] = useState(false);
   const [fmName, setFmName] = useState('');
@@ -37,6 +38,8 @@ export default function ProfileSettings({ history }) {
   const [showHostPassModal, setShowHostPassModal] = useState(false);
   const [qrZoomLevel, setQrZoomLevel] = useState(1);
   const [copiedPass, setCopiedPass] = useState(false);
+  const [showAdvancedServer, setShowAdvancedServer] = useState(false);
+  const [showLogoutAlert, setShowLogoutAlert] = useState(false);
 
   useEffect(() => {
     if (user?.pass_code) {
@@ -221,117 +224,142 @@ export default function ProfileSettings({ history }) {
             </div>
           )}
 
-          {/* 3. Switch Host Profile */}
+          {/* 3. Host Profile & Identity Details */}
           <div style={{ background: '#ffffff', border: '1.5px solid #ede5da', borderRadius: '20px', padding: '1.2rem', marginBottom: '1.2rem', boxShadow: '0 2px 8px rgba(184, 64, 24, 0.04)' }}>
-            <h3 style={{ margin: '0 0 0.7rem 0', fontSize: '0.98rem', fontWeight: '800', color: '#1c1917' }}>
-              Switch Host Persona (For Testing)
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {DEMO_HOSTS.map((h) => (
-                <button
-                  key={h.id}
-                  type="button"
-                  onClick={() => {
-                    selectDemoHost(h);
-                    setToastMsg(`Switched to ${h.name}`);
-                  }}
-                  style={{
-                    background: user?.id === h.id ? '#fdede3' : '#faf6f0',
-                    border: user?.id === h.id ? '2px solid #b84018' : '1.5px solid #ede5da',
-                    borderRadius: '14px',
-                    padding: '0.65rem 0.9rem',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <div>
-                    <span style={{ fontSize: '0.86rem', fontWeight: '800', color: '#1c1917' }}>{h.name}</span>
-                    <span style={{ fontSize: '0.72rem', color: '#78716c', display: 'block', marginTop: '0.1rem' }}>{h.department}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.85rem' }}>
+              <Shield size={18} color="#b84018" />
+              <h3 style={{ margin: 0, fontSize: '0.98rem', fontWeight: '800', color: '#1c1917' }}>Host Account Information</h3>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.65rem' }}>
+              <div style={{ background: '#faf6f0', padding: '0.65rem 0.85rem', borderRadius: '12px', border: '1px solid #ede5da' }}>
+                <div style={{ fontSize: '0.7rem', color: '#78716c', fontWeight: '700', textTransform: 'uppercase' }}>Host Persona / Access Role</div>
+                <div style={{ fontSize: '0.88rem', fontWeight: '800', color: '#1c1917', marginTop: '0.1rem' }}>
+                  {user?.role || 'HOST'} • {user?.user_type || user?.residency_status || 'Resident'}
+                </div>
+              </div>
+
+              <div style={{ background: '#faf6f0', padding: '0.65rem 0.85rem', borderRadius: '12px', border: '1px solid #ede5da' }}>
+                <div style={{ fontSize: '0.7rem', color: '#78716c', fontWeight: '700', textTransform: 'uppercase' }}>Department / Residence Location</div>
+                <div style={{ fontSize: '0.88rem', fontWeight: '800', color: '#1c1917', marginTop: '0.1rem' }}>
+                  {user?.department || user?.department_name || user?.flat_info || user?.unit_number || 'Sri Sathya Sai Ashram'}
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                <div style={{ background: '#faf6f0', padding: '0.65rem 0.85rem', borderRadius: '12px', border: '1px solid #ede5da' }}>
+                  <div style={{ fontSize: '0.7rem', color: '#78716c', fontWeight: '700', textTransform: 'uppercase' }}>Registered Mobile</div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#1c1917', marginTop: '0.1rem' }}>
+                    {user?.phone || 'Configured'}
                   </div>
-                  {user?.id === h.id && <span style={{ fontSize: '0.74rem', color: '#b84018', fontWeight: '800' }}>Active</span>}
-                </button>
-              ))}
+                </div>
+
+                <div style={{ background: '#faf6f0', padding: '0.65rem 0.85rem', borderRadius: '12px', border: '1px solid #ede5da' }}>
+                  <div style={{ fontSize: '0.7rem', color: '#78716c', fontWeight: '700', textTransform: 'uppercase' }}>Gate Pass Code</div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#b84018', marginTop: '0.1rem' }}>
+                    {user?.pass_code || 'HOST-PASS'}
+                  </div>
+                </div>
+              </div>
+
+              {user?.email && (
+                <div style={{ background: '#faf6f0', padding: '0.65rem 0.85rem', borderRadius: '12px', border: '1px solid #ede5da' }}>
+                  <div style={{ fontSize: '0.7rem', color: '#78716c', fontWeight: '700', textTransform: 'uppercase' }}>Registered Email</div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#1c1917', marginTop: '0.1rem' }}>
+                    {user?.email}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* 4. API Server Configuration */}
+          {/* 4. API & Network Configuration */}
           <div style={{ background: '#ffffff', border: '1.5px solid #ede5da', borderRadius: '20px', padding: '1.2rem', marginBottom: '1.5rem', boxShadow: '0 2px 8px rgba(184, 64, 24, 0.04)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.6rem' }}>
-              <Globe size={18} color="#b84018" />
-              <h3 style={{ margin: 0, fontSize: '0.98rem', fontWeight: '800', color: '#1c1917' }}>Backend Server API URL</h3>
-            </div>
-            <input
-              type="text"
-              className="host-input"
-              value={apiUrl}
-              onChange={(e) => setApiUrlState(e.target.value)}
-              placeholder="e.g. http://localhost:5004/api"
-            />
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.6rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: showAdvancedServer ? '0.8rem' : '0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                <Globe size={18} color="#b84018" />
+                <h3 style={{ margin: 0, fontSize: '0.98rem', fontWeight: '800', color: '#1c1917' }}>Network &amp; Server</h3>
+              </div>
               <button
                 type="button"
-                onClick={() => setApiUrlState('http://localhost:5004/api')}
-                style={{ flex: 1, padding: '0.45rem', border: '1.5px solid #ede5da', background: '#faf6f0', borderRadius: '10px', fontSize: '0.72rem', fontWeight: '700', color: '#57534e', cursor: 'pointer' }}
+                onClick={() => setShowAdvancedServer(!showAdvancedServer)}
+                style={{ background: '#fdede3', border: '1px solid #fed7aa', color: '#9a3412', borderRadius: '9999px', padding: '3px 10px', fontSize: '0.72rem', fontWeight: '800', cursor: 'pointer' }}
               >
-                Local (5004)
-              </button>
-              <button
-                type="button"
-                onClick={() => setApiUrlState('https://smsavmsserver.onrender.com/api')}
-                style={{ flex: 1, padding: '0.45rem', border: '1.5px solid #ede5da', background: '#faf6f0', borderRadius: '10px', fontSize: '0.72rem', fontWeight: '700', color: '#57534e', cursor: 'pointer' }}
-              >
-                Cloud (Render)
+                {showAdvancedServer ? 'Collapse' : 'Configure'}
               </button>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '1.1rem', marginBottom: '0.4rem' }}>
-              <Globe size={18} color="#b84018" />
-              <h3 style={{ margin: 0, fontSize: '0.98rem', fontWeight: '800', color: '#1c1917' }}>Guest Portal / Frontend URL</h3>
-            </div>
-            <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.74rem', color: '#78716c' }}>
-              Used for guest invite links and online visitor gate passes.
-            </p>
-            <input
-              type="text"
-              className="host-input"
-              value={frontendUrl}
-              onChange={(e) => setFrontendUrlState(e.target.value)}
-              placeholder="e.g. https://vms-qrf6.onrender.com"
-            />
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.6rem' }}>
-              <button
-                type="button"
-                onClick={() => setFrontendUrlState('http://localhost:5173')}
-                style={{ flex: 1, padding: '0.45rem', border: '1.5px solid #ede5da', background: '#faf6f0', borderRadius: '10px', fontSize: '0.72rem', fontWeight: '700', color: '#57534e', cursor: 'pointer' }}
-              >
-                Local (5173)
-              </button>
-              <button
-                type="button"
-                onClick={() => setFrontendUrlState('https://vms-qrf6.onrender.com')}
-                style={{ flex: 1, padding: '0.45rem', border: '1.5px solid #ede5da', background: '#faf6f0', borderRadius: '10px', fontSize: '0.72rem', fontWeight: '700', color: '#57534e', cursor: 'pointer' }}
-              >
-                Cloud (Render)
-              </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#16a34a' }}></div>
+              <span style={{ fontSize: '0.76rem', color: '#57534e', fontWeight: '600' }}>
+                Production Cloud Server (https://smsavmsserver.onrender.com)
+              </span>
             </div>
 
-            <button
-              type="button"
-              onClick={handleSaveApiUrl}
-              className="host-btn-primary"
-              style={{ width: '100%', marginTop: '1rem', padding: '0.75rem', cursor: 'pointer' }}
-            >
-              Save Configuration
-            </button>
+            {showAdvancedServer && (
+              <div style={{ marginTop: '0.9rem', paddingTop: '0.8rem', borderTop: '1px solid #f0e6da' }}>
+                <label className="host-label" style={{ marginTop: 0 }}>Backend Server API URL</label>
+                <input
+                  type="text"
+                  className="host-input"
+                  value={apiUrl}
+                  onChange={(e) => setApiUrlState(e.target.value)}
+                  placeholder="https://smsavmsserver.onrender.com/api"
+                />
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setApiUrlState('https://smsavmsserver.onrender.com/api')}
+                    style={{ flex: 1, padding: '0.45rem', border: '1.5px solid #ede5da', background: '#faf6f0', borderRadius: '10px', fontSize: '0.72rem', fontWeight: '700', color: '#57534e', cursor: 'pointer' }}
+                  >
+                    Reset to Default (Render)
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '1rem', marginBottom: '0.3rem' }}>
+                  <Globe size={16} color="#b84018" />
+                  <label className="host-label" style={{ margin: 0 }}>Guest Portal / Frontend URL</label>
+                </div>
+                <input
+                  type="text"
+                  className="host-input"
+                  value={frontendUrl}
+                  onChange={(e) => setFrontendUrlState(e.target.value)}
+                  placeholder="e.g. https://vms-qrf6.onrender.com"
+                />
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setFrontendUrlState('https://vms-qrf6.onrender.com')}
+                    style={{ flex: 1, padding: '0.45rem', border: '1.5px solid #ede5da', background: '#faf6f0', borderRadius: '10px', fontSize: '0.72rem', fontWeight: '700', color: '#57534e', cursor: 'pointer' }}
+                  >
+                    Cloud (Render)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFrontendUrlState('http://localhost:5173')}
+                    style={{ flex: 1, padding: '0.45rem', border: '1.5px solid #ede5da', background: '#faf6f0', borderRadius: '10px', fontSize: '0.72rem', fontWeight: '700', color: '#57534e', cursor: 'pointer' }}
+                  >
+                    Local (5173)
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleSaveApiUrl}
+                  className="host-btn-primary"
+                  style={{ width: '100%', marginTop: '1rem', padding: '0.75rem', cursor: 'pointer' }}
+                >
+                  Save Configuration
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Logout Button */}
           <button
             type="button"
-            onClick={handleLogout}
+            onClick={() => setShowLogoutAlert(true)}
             style={{ 
               width: '100%', 
               padding: '0.85rem', 
@@ -572,6 +600,25 @@ export default function ProfileSettings({ history }) {
             </div>
           </div>
         </IonModal>
+
+        <IonAlert
+          isOpen={showLogoutAlert}
+          onDidDismiss={() => setShowLogoutAlert(false)}
+          header="Confirm Logout"
+          message="Are you sure you want to sign out from Ashram Host?"
+          buttons={[
+            {
+              text: 'Cancel',
+              role: 'cancel',
+              cssClass: 'secondary'
+            },
+            {
+              text: 'Logout',
+              role: 'destructive',
+              handler: handleLogout
+            }
+          ]}
+        />
 
         <IonToast isOpen={!!toastMsg} message={toastMsg} duration={2500} onDidDismiss={() => setToastMsg('')} />
       </IonContent>

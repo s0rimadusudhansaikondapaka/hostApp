@@ -1,40 +1,46 @@
-// Default backend API URL: Always connects by default to Render cloud server API (same as guard)
+import axios from 'axios';
+
+// Default backend server URL: Exclusively connects to https://smsavmsserver.onrender.com
+export const DEFAULT_SERVER_URL = 'https://smsavmsserver.onrender.com';
 export const DEFAULT_API_BASE_URL = 'https://smsavmsserver.onrender.com/api';
 // Default frontend web application URL (where guest invite form & pass view reside)
 export const DEFAULT_FRONTEND_URL = 'https://vms-qrf6.onrender.com';
 
 export const getBaseUrl = () => {
-  const saved = localStorage.getItem('ASHRAM_HOST_API_URL');
-  if (saved && saved !== '/api' && !saved.includes('localhost')) {
-    return saved;
+  if (import.meta.env.VITE_API_BASE_URL) {
+    const envUrl = import.meta.env.VITE_API_BASE_URL.trim().replace(/\/$/, '');
+    return envUrl.endsWith('/api') ? envUrl : `${envUrl}/api`;
   }
 
-  return import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL;
+  const saved = localStorage.getItem('ASHRAM_HOST_API_URL');
+  if (saved && !saved.includes('localhost') && !saved.includes('127.0.0.1') && saved.startsWith('http')) {
+    return saved.trim().replace(/\/$/, '');
+  }
+
+  // Clear any legacy localhost entry
+  if (saved && (saved.includes('localhost') || saved.includes('127.0.0.1'))) {
+    localStorage.removeItem('ASHRAM_HOST_API_URL');
+  }
+
+  return DEFAULT_API_BASE_URL;
 };
 
 export const setBaseUrl = (url) => {
-  localStorage.setItem('ASHRAM_HOST_API_URL', url);
+  if (url) {
+    localStorage.setItem('ASHRAM_HOST_API_URL', url.trim().replace(/\/$/, ''));
+  } else {
+    localStorage.removeItem('ASHRAM_HOST_API_URL');
+  }
 };
 
 export const getFrontendUrl = () => {
-  const saved = localStorage.getItem('ASHRAM_HOST_FRONTEND_URL');
-  if (saved && !saved.includes('localhost') && !saved.includes('capacitor') && saved !== '/') {
-    return saved.replace(/\/$/, '');
-  }
-
   if (import.meta.env.VITE_FRONTEND_URL) {
-    return import.meta.env.VITE_FRONTEND_URL.replace(/\/$/, '');
+    return import.meta.env.VITE_FRONTEND_URL.trim().replace(/\/$/, '');
   }
 
-  const currentApi = getBaseUrl();
-  const isCapacitorOrLocal =
-    window.location.protocol === 'capacitor:' ||
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1';
-
-  // If running locally in development and connected to local backend (5004), default local frontend to 5173
-  if (isCapacitorOrLocal && (currentApi.includes('localhost:5004') || currentApi.includes('127.0.0.1:5004'))) {
-    return 'http://localhost:5173';
+  const saved = localStorage.getItem('ASHRAM_HOST_FRONTEND_URL');
+  if (saved && !saved.includes('localhost') && !saved.includes('127.0.0.1') && !saved.includes('capacitor') && saved.startsWith('http')) {
+    return saved.trim().replace(/\/$/, '');
   }
 
   return DEFAULT_FRONTEND_URL;
@@ -42,7 +48,7 @@ export const getFrontendUrl = () => {
 
 export const setFrontendUrl = (url) => {
   if (url) {
-    localStorage.setItem('ASHRAM_HOST_FRONTEND_URL', url.replace(/\/$/, ''));
+    localStorage.setItem('ASHRAM_HOST_FRONTEND_URL', url.trim().replace(/\/$/, ''));
   } else {
     localStorage.removeItem('ASHRAM_HOST_FRONTEND_URL');
   }

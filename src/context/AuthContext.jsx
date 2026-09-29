@@ -54,6 +54,36 @@ export const DEMO_HOSTS = [
   },
 ];
 
+export const isAllowedHostRole = (user) => {
+  if (!user) return false;
+  const role = (user.role || '').toUpperCase();
+  const userType = (user.user_type || '').toUpperCase();
+
+  // Guard, General Visitor, or Delivery are NOT hosts and must NOT access Host App
+  if (role === 'GUARD' || role === 'SECURITY_GUARD' || role === 'VISITOR' || role === 'DELIVERY') {
+    return false;
+  }
+  if (userType === 'GUARD' || userType === 'VISITOR') {
+    return false;
+  }
+
+  // Allowed Host roles:
+  const allowed = [
+    'HOST',
+    'RESIDENT',
+    'EMPLOYEE',
+    'RESIDENT_EMPLOYEE',
+    'HOD',
+    'VIP_HOST',
+    'VIP_GUEST_HOST',
+    'ADMIN',
+    'SUPER_ADMIN',
+    'SUPERVISOR'
+  ];
+
+  return allowed.some(a => role.includes(a) || userType.includes(a));
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -66,75 +96,74 @@ export const AuthProvider = ({ children }) => {
     const savedUser = localStorage.getItem('ASHRAM_HOST_USER');
     const savedToken = localStorage.getItem('ASHRAM_HOST_TOKEN');
 
-    if (savedToken) {
-      if (savedUser) {
-        try {
-          setUser(JSON.parse(savedUser));
-        } catch (e) {}
+    if (savedToken && savedUser) {
+      try {
+        const parsed = JSON.parse(savedUser);
+        if (isAllowedHostRole(parsed)) {
+          setUser(parsed);
+        } else {
+          logoutUser();
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+        logoutUser();
+        setUser(null);
+        setLoading(false);
+        return;
       }
+
       try {
         const meRes = await getMe();
         if (meRes?.user) {
-          setUser(meRes.user);
-          localStorage.setItem('ASHRAM_HOST_USER', JSON.stringify(meRes.user));
+          if (isAllowedHostRole(meRes.user)) {
+            setUser(meRes.user);
+            localStorage.setItem('ASHRAM_HOST_USER', JSON.stringify(meRes.user));
+          } else {
+            logoutUser();
+            setUser(null);
+          }
         }
       } catch (err) {
-        console.warn('Session check fallback:', err.message);
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          logoutUser();
+          setUser(null);
+        } else {
+          console.warn('Session check fallback:', err.message);
+        }
       }
     } else {
-      // Default to the first demo host so the user can immediately explore
-      const defaultHost = DEMO_HOSTS[0];
-      setUser(defaultHost);
-      localStorage.setItem('ASHRAM_HOST_USER', JSON.stringify(defaultHost));
-      localStorage.setItem('ASHRAM_HOST_TOKEN', 'demo_host_session_token');
+      // Production ready: NO automatic mock login! User must login with their host account.
+      setUser(null);
     }
     setLoading(false);
   };
 
   const loginWithPhoneOtp = async (phone, otp) => {
-    try {
-      const res = await verifyOtp(phone, otp);
-      if (res?.user) {
-        setUser(res.user);
-      }
-      return res;
-    } catch (err) {
-      // Match demo host if phone matches
-      const matched = DEMO_HOSTS.find(h => h.phone.replace(/\D/g, '').includes(phone.replace(/\D/g, '')));
-      if (matched) {
-        setUser(matched);
-        localStorage.setItem('ASHRAM_HOST_USER', JSON.stringify(matched));
-        localStorage.setItem('ASHRAM_HOST_TOKEN', `demo_token_${matched.id}`);
-        return { success: true, user: matched };
-      }
-      throw err;
+    const res = await verifyOtp(phone, otp);
+    if (!res?.user) {
+      throw new Error(res?.message || 'Login failed. Invalid OTP or user.');
     }
+    if (!isAllowedHostRole(res.user)) {
+      logoutUser();
+      throw new Error('Access Denied: This app is restricted to Ashram Hosts and Residents only. Security Guards should use the Security Guard App.');
+    }
+    setUser(res.user);
+    return res;
   };
 
   const loginWithCredentials = async (emailOrPhone, password) => {
-    try {
-      const res = await loginUser(emailOrPhone, password);
-      if (res?.user) {
-        setUser(res.user);
-      }
-      return res;
-    } catch (err) {
-      const clean = emailOrPhone.trim().toLowerCase();
-      const matched = DEMO_HOSTS.find(h => h.email.toLowerCase() === clean || h.phone.includes(clean));
-      if (matched) {
-        setUser(matched);
-        localStorage.setItem('ASHRAM_HOST_USER', JSON.stringify(matched));
-        localStorage.setItem('ASHRAM_HOST_TOKEN', `demo_token_${matched.id}`);
-        return { success: true, user: matched };
-      }
-      throw err;
+    const res = await loginUser(emailOrPhone, password);
+    if (!res?.user) {
+      throw new Error(res?.message || 'Login failed. Invalid email or password.');
     }
-  };
-
-  const selectDemoHost = (demoHost) => {
-    setUser(demoHost);
-    localStorage.setItem('ASHRAM_HOST_USER', JSON.stringify(demoHost));
-    localStorage.setItem('ASHRAM_HOST_TOKEN', `demo_token_${demoHost.id}`);
+    if (!isAllowedHostRole(res.user)) {
+      logoutUser();
+      throw new Error('Access Denied: This app is restricted to Ashram Hosts and Residents only. Security Guards should use the Security Guard App.');
+    }
+    setUser(res.user);
+    return res;
   };
 
   const logout = () => {
@@ -150,7 +179,6 @@ export const AuthProvider = ({ children }) => {
         loading,
         loginWithPhoneOtp,
         loginWithCredentials,
-        selectDemoHost,
         logout,
         isAuthenticated: !!user,
       }}
