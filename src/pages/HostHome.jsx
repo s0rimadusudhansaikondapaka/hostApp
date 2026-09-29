@@ -32,10 +32,9 @@ import {
   Search, 
   SlidersHorizontal,
   MapPin,
-  Sparkles,
-  ArrowRight
 } from 'lucide-react';
 import QRCode from 'qrcode';
+import OneWorldOneFamilyLogo from '../components/OneWorldOneFamilyLogo';
 
 export default function HostHome({ history }) {
   const { user, logout } = useAuth();
@@ -117,9 +116,7 @@ export default function HostHome({ history }) {
       <IonHeader className="ion-no-border">
         <IonToolbar style={{ '--background': '#ffffff', borderBottom: '1.5px solid #f0e6da', padding: '0.2rem 0.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'linear-gradient(135deg, #c84a1a, #9a3412)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: '0 2px 8px rgba(184, 64, 24, 0.25)' }}>
-              <Shield size={20} />
-            </div>
+            <OneWorldOneFamilyLogo size={36} showText={false} variant="navbar" speed="normal" />
             <div>
               <h2 style={{ margin: 0, fontSize: '1.05rem', fontWeight: '800', color: '#1c1917', letterSpacing: '-0.01em' }}>Ashram Host</h2>
               <span style={{ fontSize: '0.72rem', color: '#78716c', fontWeight: '600' }}>Sri Sathya Sai Ashram</span>

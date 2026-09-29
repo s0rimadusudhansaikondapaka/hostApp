@@ -8,6 +8,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { sendOtp } from '../services/api';
 import { Smartphone, Lock, ShieldCheck, ArrowRight, Eye, EyeOff, Building, CheckCircle2, AlertCircle } from 'lucide-react';
+import OneWorldOneFamilyLogo from '../components/OneWorldOneFamilyLogo';
 
 export default function Login({ history }) {
   const { loginWithPhoneOtp, loginWithCredentials } = useAuth();
@@ -95,20 +96,9 @@ export default function Login({ history }) {
       <IonContent fullscreen className="ion-padding" style={{ '--background': '#faf6f0' }}>
         <div style={{ maxWidth: '420px', margin: '2rem auto 2rem auto', textAlign: 'center' }}>
           
-          {/* Spiritual Terracotta Ashram Emblem Banner */}
-          <div style={{ 
-            display: 'inline-flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            width: '68px', 
-            height: '68px', 
-            borderRadius: '24px', 
-            background: 'linear-gradient(135deg, #c84a1a 0%, #b43403 50%, #9a3412 100%)', 
-            color: 'white', 
-            marginBottom: '0.85rem', 
-            boxShadow: '0 8px 24px rgba(184, 64, 24, 0.3)' 
-          }}>
-            <ShieldCheck size={38} />
+          {/* One World One Family 360° Rotating Emblem Banner */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.95rem' }}>
+            <OneWorldOneFamilyLogo size={78} showText={false} variant="hero" speed="normal" />
           </div>
           
           <h1 style={{ fontSize: '1.75rem', fontWeight: '800', color: '#1c1917', margin: '0 0 0.25rem 0', letterSpacing: '-0.02em' }}>

@@ -344,3 +344,45 @@ ion-tab-button ion-label {
   font-weight: 700 !important;
   margin-top: 2px !important;
 }
+
+/* One World One Family Rotating Emblem Animations */
+@keyframes spin3602D {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes spin3602DReverse {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(252, 185, 0, 0.7));
+  }
+  50% {
+    filter: drop-shadow(0 0 18px rgba(223, 111, 6, 0.9));
+  }
+}
+
+.spin-360-vertical {
+  animation: spin3602D 16s linear infinite;
+  transform-origin: center center;
+}
+
+.spin-360-reverse-smooth {
+  animation: spin3602DReverse 15s linear infinite;
+}
+
+.owof-glow {
+  animation: pulseGlow 3.5s ease-in-out infinite;
+}
+
