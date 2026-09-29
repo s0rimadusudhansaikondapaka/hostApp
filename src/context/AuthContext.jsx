@@ -84,6 +84,29 @@ export const isAllowedHostRole = (user) => {
   return allowed.some(a => role.includes(a) || userType.includes(a));
 };
 
+export const getHostPassCode = (user) => {
+  if (!user) return 'HOST-PASS-01';
+  if (user.pass_code) return user.pass_code;
+  const demoMatch = DEMO_HOSTS.find(d => d.id === user.id || (user.email && d.email.toLowerCase() === String(user.email).toLowerCase()));
+  if (demoMatch?.pass_code) return demoMatch.pass_code;
+  const role = String(user.role || user.user_type || 'HOST').toUpperCase();
+  const idNum = user.id ? 1000 + Number(user.id) : 1001;
+  if (role.includes('RESIDENT')) return `RESIDENT-${idNum}`;
+  if (role.includes('EMP')) return `EMP-${idNum}`;
+  if (role.includes('HOD')) return `HOD-${idNum}`;
+  if (role.includes('VIP')) return `VIP-${idNum}`;
+  return `HOST-${idNum}`;
+};
+
+export const enrichUserData = (userData) => {
+  if (!userData) return null;
+  return {
+    ...userData,
+    pass_code: userData.pass_code || getHostPassCode(userData),
+    department: userData.department || userData.department_name || (userData.flat_info ? `Flat ${userData.flat_info}` : 'Sri Sathya Sai Ashram'),
+  };
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -100,7 +123,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const parsed = JSON.parse(savedUser);
         if (isAllowedHostRole(parsed)) {
-          setUser(parsed);
+          setUser(enrichUserData(parsed));
         } else {
           logoutUser();
           setUser(null);
@@ -118,8 +141,9 @@ export const AuthProvider = ({ children }) => {
         const meRes = await getMe();
         if (meRes?.user) {
           if (isAllowedHostRole(meRes.user)) {
-            setUser(meRes.user);
-            localStorage.setItem('ASHRAM_HOST_USER', JSON.stringify(meRes.user));
+            const enriched = enrichUserData(meRes.user);
+            setUser(enriched);
+            localStorage.setItem('ASHRAM_HOST_USER', JSON.stringify(enriched));
           } else {
             logoutUser();
             setUser(null);
@@ -149,7 +173,9 @@ export const AuthProvider = ({ children }) => {
       logoutUser();
       throw new Error('Access Denied: This app is restricted to Ashram Hosts and Residents only. Security Guards should use the Security Guard App.');
     }
-    setUser(res.user);
+    const enriched = enrichUserData(res.user);
+    setUser(enriched);
+    localStorage.setItem('ASHRAM_HOST_USER', JSON.stringify(enriched));
     return res;
   };
 
@@ -162,7 +188,9 @@ export const AuthProvider = ({ children }) => {
       logoutUser();
       throw new Error('Access Denied: This app is restricted to Ashram Hosts and Residents only. Security Guards should use the Security Guard App.');
     }
-    setUser(res.user);
+    const enriched = enrichUserData(res.user);
+    setUser(enriched);
+    localStorage.setItem('ASHRAM_HOST_USER', JSON.stringify(enriched));
     return res;
   };
 

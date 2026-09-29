@@ -13,7 +13,7 @@ import {
   IonModal,
 } from '@ionic/react';
 import { personCircleOutline } from 'ionicons/icons';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, getHostPassCode } from '../context/AuthContext';
 import { getHostRegistrations, getFrontendUrl } from '../services/api';
 import { 
   UserPlus, 
@@ -49,6 +49,8 @@ export default function HostHome({ history }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('ALL'); // 'ALL', 'PENDING', 'INSIDE', 'VIP'
 
+  const effectivePassCode = user?.pass_code || getHostPassCode(user);
+
   const fetchHostData = async () => {
     try {
       const res = await getHostRegistrations();
@@ -64,12 +66,11 @@ export default function HostHome({ history }) {
 
   useEffect(() => {
     fetchHostData();
-    if (user?.pass_code) {
-      QRCode.toDataURL(user.pass_code, { width: 600, margin: 2 })
-        .then(url => setHostQrUrl(url))
-        .catch(() => {});
-    }
-  }, [user]);
+    const code = effectivePassCode || 'HOST-PASS-01';
+    QRCode.toDataURL(code, { width: 600, margin: 2 })
+      .then(url => setHostQrUrl(url))
+      .catch(err => console.error('Failed to generate host QR code:', err));
+  }, [user, effectivePassCode]);
 
   const handleRefresh = async (event) => {
     await fetchHostData();
@@ -348,7 +349,7 @@ export default function HostHome({ history }) {
               <span style={{ fontSize: '0.68rem', color: '#b84018', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Host Permanent Gate Pass</span>
               <span style={{ fontSize: '0.68rem', background: '#fdede3', color: '#b84018', padding: '0.15rem 0.45rem', borderRadius: '9999px', fontWeight: 'bold' }}>Tap to Enlarge</span>
             </div>
-            <div style={{ fontSize: '1.05rem', fontWeight: '800', color: '#1c1917', margin: '0.1rem 0' }}>{user?.pass_code || 'HOST-PASS-01'}</div>
+            <div style={{ fontSize: '1.05rem', fontWeight: '800', color: '#1c1917', margin: '0.1rem 0' }}>{effectivePassCode}</div>
             <span style={{ fontSize: '0.72rem', color: '#15803d', fontWeight: '600' }}>✓ Scan at Gate Terminal</span>
           </div>
           <ChevronRight size={18} color="#b84018" />
@@ -642,12 +643,12 @@ export default function HostHome({ history }) {
                 Permanent Gate Passcode
               </span>
               <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#9a3412', letterSpacing: '0.08em', margin: '0.2rem 0' }}>
-                {user?.pass_code || 'HOST-PASS-01'}
+                {effectivePassCode}
               </div>
               <button
                 type="button"
                 onClick={() => {
-                  navigator.clipboard?.writeText(user?.pass_code || '');
+                  navigator.clipboard?.writeText(effectivePassCode);
                   setCopiedPass(true);
                   setTimeout(() => setCopiedPass(false), 2000);
                 }}
@@ -664,8 +665,8 @@ export default function HostHome({ history }) {
                 className="host-btn-primary"
                 onClick={() => {
                   const frontendUrl = getFrontendUrl();
-                  const passUrl = `${frontendUrl}/?pass=${user?.pass_code}`;
-                  const shareText = `Jay Sai Ram! Here is my official Ashram Host Gate Pass:\n\nHost: ${user?.name}\nRole: ${user?.role}\nPasscode: ${user?.pass_code}\nValidity: Permanent\n\nDigital Pass: ${passUrl}`;
+                  const passUrl = `${frontendUrl}/?pass=${effectivePassCode}`;
+                  const shareText = `Jay Sai Ram! Here is my official Ashram Host Gate Pass:\n\nHost: ${user?.name || 'Ashram Host'}\nRole: ${user?.role || 'Host'}\nPasscode: ${effectivePassCode}\nValidity: Permanent\n\nDigital Pass: ${passUrl}`;
                   if (navigator.share) {
                     navigator.share({ title: 'Host Gate Pass', text: shareText, url: passUrl }).catch(() => {});
                   } else {

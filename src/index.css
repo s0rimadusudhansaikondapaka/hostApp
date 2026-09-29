@@ -294,6 +294,9 @@ body {
 /* Clean Form inputs with warm aesthetic */
 .host-input {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
   padding: 0.75rem 0.95rem;
   border: 1.5px solid #ebdccc;
   border-radius: 14px;

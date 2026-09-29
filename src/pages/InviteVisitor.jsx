@@ -422,7 +422,7 @@ export default function InviteVisitor({ history }) {
               <span>2.</span> Visit Schedule (5:00 AM – 10:00 PM)
             </h3>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               <div>
                 <label className="host-label" style={{ marginTop: 0 }}>Arrival Date/Time (ETA) *</label>
                 <input
@@ -435,7 +435,12 @@ export default function InviteVisitor({ history }) {
                 />
               </div>
               <div>
-                <label className="host-label" style={{ marginTop: 0 }}>Departure Date/Time (ETD) *</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                  <label className="host-label" style={{ margin: 0 }}>Departure Date/Time (ETD) *</label>
+                  <span style={{ fontSize: '0.68rem', color: '#9a3412', background: '#ffedd5', padding: '2px 8px', borderRadius: '6px', fontWeight: '700' }}>
+                    Auto-Computed (Locked)
+                  </span>
+                </div>
                 <input
                   type="datetime-local"
                   required
@@ -447,7 +452,7 @@ export default function InviteVisitor({ history }) {
                 />
               </div>
             </div>
-            <span style={{ fontSize: '0.72rem', color: '#78716c', display: 'block', marginTop: '0.4rem', fontWeight: '500' }}>
+            <span style={{ fontSize: '0.72rem', color: '#78716c', display: 'block', marginTop: '0.5rem', fontWeight: '500', lineHeight: 1.35 }}>
               * Phase 1 enforces strictly single-day visits (5:00 AM – 10:00 PM). Scheduled departure is auto-computed on the same date and locked.
             </span>
           </div>
