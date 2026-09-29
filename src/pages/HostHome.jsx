@@ -221,18 +221,29 @@ export default function HostHome({ history }) {
         {/* 2. Motivational Seva Card matching Attachment 2 */}
         <div className="host-seva-card">
           <div style={{ 
-            width: '46px', 
-            height: '46px', 
+            width: '48px', 
+            height: '48px', 
             borderRadius: '50%', 
-            background: 'linear-gradient(135deg, #c84a1a, #b43403)', 
-            color: '#ffffff', 
+            overflow: 'hidden',
+            border: '2px solid #b84018', 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center',
             flexShrink: 0,
-            boxShadow: '0 3px 10px rgba(184, 64, 24, 0.25)'
+            boxShadow: '0 3px 10px rgba(184, 64, 24, 0.25)',
+            background: '#faf6f0'
           }}>
-            <Shield size={22} />
+            <img 
+              src="/madhu_sudhan_sai.jpg" 
+              alt="Sri Madhusudan Sai" 
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'center 12%',
+                display: 'block'
+              }}
+            />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h3 style={{ margin: '0 0 0.15rem 0', fontSize: '0.92rem', fontWeight: '800', color: '#1c1917' }}>
