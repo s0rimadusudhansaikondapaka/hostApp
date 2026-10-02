@@ -11,7 +11,7 @@ import {
   IonRefresherContent,
 } from '@ionic/react';
 import { getHostRegistrations } from '../services/api';
-import { Users, Calendar, Car, ChevronRight, ShieldCheck } from 'lucide-react';
+import { Users, Calendar, Car, ChevronRight, ShieldCheck, History } from 'lucide-react';
 
 export default function ActiveVisitors({ history }) {
   const [activeList, setActiveList] = useState([]);
@@ -21,9 +21,11 @@ export default function ActiveVisitors({ history }) {
     try {
       const res = await getHostRegistrations();
       if (res?.registrations) {
-        const active = res.registrations.filter(
-          (r) => r.status === 'INSIDE_CAMPUS' || r.status === 'APPROVED'
-        );
+        const active = res.registrations.filter((r) => {
+          const s = (r.status || '').toUpperCase();
+          const p = (r.presence_status || '').toLowerCase();
+          return s === 'INSIDE_CAMPUS' || p === 'currently_inside' || p === 'over_stayed' || s === 'APPROVED';
+        });
         setActiveList(active);
       }
     } catch (e) {
@@ -173,6 +175,35 @@ export default function ActiveVisitors({ history }) {
             );
           })
         )}
+
+        {/* Shortcut to Past Visitors & Archives */}
+        <div 
+          onClick={() => history && history.push('/past-visitors')}
+          style={{
+            marginTop: '1.2rem',
+            marginBottom: '1rem',
+            padding: '0.85rem 1rem',
+            background: '#ffffff',
+            borderRadius: '16px',
+            border: '1.5px solid #ebdccc',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(184, 64, 24, 0.04)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#f5eee6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <History size={18} color="#b84018" />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.85rem', fontWeight: '800', color: '#1c1917' }}>View Past Visitors & Archives</div>
+              <div style={{ fontSize: '0.72rem', color: '#78716c' }}>Looking for completed, lapsed, or older passes?</div>
+            </div>
+          </div>
+          <ChevronRight size={18} color="#b84018" />
+        </div>
       </IonContent>
     </IonPage>
   );

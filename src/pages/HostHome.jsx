@@ -82,7 +82,7 @@ export default function HostHome({ history }) {
   );
 
   const activeVisitors = registrations.filter(
-    (r) => r.status === 'INSIDE_CAMPUS' || r.status === 'APPROVED'
+    (r) => r.status === 'INSIDE_CAMPUS' || r.status === 'APPROVED' || r.presence_status === 'currently_inside' || r.presence_status === 'over_stayed'
   );
 
   const insideVisitors = registrations.filter(
@@ -546,6 +546,33 @@ export default function HostHome({ history }) {
                 </div>
               );
             })
+          )}
+          {filteredVisitors.length > 10 && (
+            <button
+              type="button"
+              onClick={() => history.push('/past-visitors')}
+              style={{
+                width: '100%',
+                padding: '0.85rem',
+                background: '#ffffff',
+                border: '1.5px solid #ebdccc',
+                borderRadius: '14px',
+                color: '#b84018',
+                fontWeight: '700',
+                fontSize: '0.82rem',
+                marginTop: '0.5rem',
+                marginBottom: '1rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.4rem',
+                boxShadow: '0 2px 8px rgba(184, 64, 24, 0.04)'
+              }}
+            >
+              <span>View All {filteredVisitors.length} Visitors in Archives</span>
+              <ChevronRight size={16} />
+            </button>
           )}
         </div>
 
