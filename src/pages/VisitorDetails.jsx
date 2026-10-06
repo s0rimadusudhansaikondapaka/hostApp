@@ -205,12 +205,12 @@ export default function VisitorDetails({ match, history }) {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.45rem 0', borderBottom: '1px solid #ebdccc' }}>
-                <span style={{ color: '#78716c' }}>Scheduled Arrival</span>
+                <span style={{ color: '#78716c' }}>Scheduled Arrival (SAT)</span>
                 <span style={{ color: '#1c1917', fontWeight: '700' }}>{formatDate(visitor?.valid_from)}</span>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.45rem 0', borderBottom: '1px solid #ebdccc' }}>
-                <span style={{ color: '#78716c' }}>Scheduled Departure</span>
+                <span style={{ color: '#78716c' }}>Scheduled Departure (SDT)</span>
                 <span style={{ color: '#1c1917', fontWeight: '700' }}>{formatDate(visitor?.valid_until)}</span>
               </div>
 

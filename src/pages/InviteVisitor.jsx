@@ -188,11 +188,11 @@ export default function InviteVisitor({ history }) {
 
     // 2. 5:00 AM - 10:00 PM Operating Hours Validation
     if (fromH < 5 || fromH > 22 || (fromH === 22 && fromM > 0)) {
-      setError('Arrival Time (ETA) must be between 5:00 AM and 10:00 PM.');
+      setError('Scheduled Arrival Time (SAT) must be between 5:00 AM and 10:00 PM.');
       return;
     }
     if (untilH < 5 || untilH > 22 || (untilH === 22 && untilM > 0)) {
-      setError('Departure Time (ETD) must be between 5:00 AM and 10:00 PM.');
+      setError('Scheduled Departure Time (SDT) must be between 5:00 AM and 10:00 PM.');
       return;
     }
 
@@ -424,7 +424,7 @@ export default function InviteVisitor({ history }) {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               <div>
-                <label className="host-label" style={{ marginTop: 0 }}>Arrival Date/Time (ETA) *</label>
+                <label className="host-label" style={{ marginTop: 0 }}>Scheduled Arrival Date/Time (SAT) *</label>
                 <input
                   type="datetime-local"
                   required
@@ -436,7 +436,7 @@ export default function InviteVisitor({ history }) {
               </div>
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                  <label className="host-label" style={{ margin: 0 }}>Departure Date/Time (ETD) *</label>
+                  <label className="host-label" style={{ margin: 0 }}>Scheduled Departure Date/Time (SDT) *</label>
                   <span style={{ fontSize: '0.68rem', color: '#9a3412', background: '#ffedd5', padding: '2px 8px', borderRadius: '6px', fontWeight: '700' }}>
                     Auto-Computed (Locked)
                   </span>
