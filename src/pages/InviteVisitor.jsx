@@ -244,7 +244,8 @@ export default function InviteVisitor({ history }) {
         setError(res?.message || 'Failed to submit visitor invite.');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit visitor invite.');
+      const serverMsg = err.response?.data?.message || err.response?.data?.error || err.message;
+      setError(serverMsg || 'Failed to submit visitor invite.');
     } finally {
       setSubmitting(false);
     }

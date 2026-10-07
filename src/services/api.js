@@ -59,6 +59,25 @@ export const getAuthHeaders = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
+// Global session expiration handling
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      const url = error.config?.url || '';
+      if (!url.includes('/auth/login') && !url.includes('/auth/verify-otp') && !url.includes('/auth/send-otp')) {
+        console.warn('[Host App] Session expired or unauthorized (401/403). Clearing host token.');
+        localStorage.removeItem('ASHRAM_HOST_TOKEN');
+        localStorage.removeItem('ASHRAM_HOST_USER');
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // ================= AUTHENTICATION =================
 export const loginUser = async (emailOrPhone, password) => {
   const baseUrl = getBaseUrl();
