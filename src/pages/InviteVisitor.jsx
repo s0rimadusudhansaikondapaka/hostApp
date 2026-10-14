@@ -31,11 +31,15 @@ const VEHICLE_TYPES = [
 export default function InviteVisitor({ history }) {
   const { user } = useAuth();
 
+  const isVipHostOnly = user?.user_type === 'VIP_HOST' || user?.role === 'VIP_HOST';
+  const isVipHost = isVipHostOnly || (user?.user_type && user.user_type.includes('VIP_HOST')) || (user?.role && user.role.includes('VIP_HOST'));
+  const isVipOrHodHost = isVipHost || user?.role === 'HOD' || user?.user_type === 'HOD';
+
   // Form State
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [category, setCategory] = useState('GENERAL');
+  const [category, setCategory] = useState(isVipHost ? 'VIP' : 'GENERAL');
   const [purpose, setPurpose] = useState('');
   const [visitType, setVisitType] = useState('HOME');
   const [gender, setGender] = useState('Male');
@@ -122,6 +126,7 @@ export default function InviteVisitor({ history }) {
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareToken, setShareToken] = useState('');
   const [generatingToken, setGeneratingToken] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const addVehicle = () => {
     if (vehicles.length >= 5) {
@@ -146,7 +151,7 @@ export default function InviteVisitor({ history }) {
     setPhone('');
     setEmail('');
     setGender('Male');
-    setCategory('GENERAL');
+    setCategory(isVipHost ? 'VIP' : 'GENERAL');
     setPurpose('');
     setRegistrationMode('Single');
     setAdultMen(1);
@@ -176,8 +181,16 @@ export default function InviteVisitor({ history }) {
       return;
     }
 
+    // 2. Same-Day Departure Validation (Issues #11 & #10)
+    const fromDateOnly = validFrom.split('T')[0];
+    const untilDateOnly = validUntil.split('T')[0];
+    if (fromDateOnly !== untilDateOnly) {
+      setError('Scheduled Departure Date must be on the same day as Scheduled Arrival Date.');
+      return;
+    }
+
     if (untilDate <= fromDate) {
-      setError('Departure Time must be after Arrival Time.');
+      setError('Scheduled Departure Time must be after Scheduled Arrival Time.');
       return;
     }
 
@@ -186,7 +199,7 @@ export default function InviteVisitor({ history }) {
     const untilH = untilDate.getHours();
     const untilM = untilDate.getMinutes();
 
-    // 2. 5:00 AM - 10:00 PM Operating Hours Validation
+    // 3. 5:00 AM - 10:00 PM Operating Hours Validation (Issue #2)
     if (fromH < 5 || fromH > 22 || (fromH === 22 && fromM > 0)) {
       setError('Scheduled Arrival Time (SAT) must be between 5:00 AM and 10:00 PM.');
       return;
@@ -218,13 +231,13 @@ export default function InviteVisitor({ history }) {
       phone,
       email,
       gender,
-      visitor_category: category,
+      visitor_category: isVipHost ? 'VIP' : category,
       host_id: user?.id || 1,
-      purpose: purpose || 'Ashram Visit',
+      purpose: purpose.trim() || (isVipHost ? 'VIP Ashram Visit' : 'Ashram Visit'),
       visit_type: visitType,
       stay_required: accommodationRequired,
-      valid_from: validFrom,
-      valid_until: validUntil,
+      valid_from: new Date(validFrom).toISOString(),
+      valid_until: new Date(validUntil).toISOString(),
       adult_men_count: computedMen,
       adult_women_count: computedWomen,
       boys_count: computedBoys,
@@ -273,8 +286,6 @@ export default function InviteVisitor({ history }) {
   const frontendUrl = getFrontendUrl();
   const activeInviteToken = shareToken || `inv_${user?.id || 1}_${Date.now()}`;
   const inviteLink = `${frontendUrl}/?invite=true&token=${activeInviteToken}`;
-
-  const isVipOrHodHost = user?.role === 'HOD' || user?.user_type === 'HOD' || user?.role === 'VIP_HOST' || user?.user_type === 'VIP_HOST' || (user?.user_type && user.user_type.includes('VIP_HOST')) || (user?.role && user.role.includes('VIP_HOST'));
 
   return (
     <IonPage>
@@ -372,18 +383,20 @@ export default function InviteVisitor({ history }) {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', marginTop: '0.4rem' }}>
-              <div>
-                <label className="host-label">Visitor Category</label>
-                <select className="host-input" value={category} onChange={(e) => setCategory(e.target.value)}>
-                  <option value="GENERAL">General Guest</option>
-                  <option value="VIP">VIP Guest</option>
-                  <option value="FAMILY_MEMBER">Family Member</option>
-                  <option value="FREQUENT_VISITOR">Frequent Visitor</option>
-                  <option value="DELIVERY">Delivery / Courier</option>
-                  <option value="VENDOR">Vendor / Contractor</option>
-                </select>
-              </div>
+            <div style={{ display: 'grid', gridTemplateColumns: isVipHost ? '1fr' : '1fr 1fr', gap: '0.6rem', marginTop: '0.4rem' }}>
+              {!isVipHost && (
+                <div>
+                  <label className="host-label">Visitor Category</label>
+                  <select className="host-input" value={category} onChange={(e) => setCategory(e.target.value)}>
+                    <option value="GENERAL">General Guest</option>
+                    <option value="VIP">VIP Guest</option>
+                    <option value="FAMILY_MEMBER">Family Member</option>
+                    <option value="FREQUENT_VISITOR">Frequent Visitor</option>
+                    <option value="DELIVERY">Delivery / Courier</option>
+                    <option value="VENDOR">Vendor / Contractor</option>
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="host-label">Visit Type</label>
                 <select className="host-input" value={visitType} onChange={(e) => setVisitType(e.target.value)}>
@@ -407,14 +420,18 @@ export default function InviteVisitor({ history }) {
               />
             </div>
 
-            <label className="host-label" style={{ marginTop: '0.4rem' }}>Purpose of Visit</label>
-            <input
-              type="text"
-              className="host-input"
-              placeholder="e.g. Darshan, Meeting, Delivery"
-              value={purpose}
-              onChange={(e) => setPurpose(e.target.value)}
-            />
+            {!isVipHost && (
+              <>
+                <label className="host-label" style={{ marginTop: '0.4rem' }}>Purpose of Visit</label>
+                <input
+                  type="text"
+                  className="host-input"
+                  placeholder="e.g. Darshan, Meeting, Delivery"
+                  value={purpose}
+                  onChange={(e) => setPurpose(e.target.value)}
+                />
+              </>
+            )}
           </div>
 
           {/* Section 2: Visit Date & Time Window */}
@@ -439,22 +456,22 @@ export default function InviteVisitor({ history }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
                   <label className="host-label" style={{ margin: 0 }}>Scheduled Departure Date/Time (SDT) *</label>
                   <span style={{ fontSize: '0.68rem', color: '#9a3412', background: '#ffedd5', padding: '2px 8px', borderRadius: '6px', fontWeight: '700' }}>
-                    Auto-Computed (Locked)
+                    Same-Day Window
                   </span>
                 </div>
                 <input
                   type="datetime-local"
                   required
-                  disabled
+                  min={validFrom || getMinDateTime()}
+                  max={validFrom ? `${validFrom.split('T')[0]}T22:00` : undefined}
                   className="host-input"
-                  style={{ background: '#f5eee6', cursor: 'not-allowed', color: '#57534e' }}
                   value={validUntil}
                   onChange={(e) => setValidUntil(e.target.value)}
                 />
               </div>
             </div>
             <span style={{ fontSize: '0.72rem', color: '#78716c', display: 'block', marginTop: '0.5rem', fontWeight: '500', lineHeight: 1.35 }}>
-              * Phase 1 enforces strictly single-day visits (5:00 AM – 10:00 PM). Scheduled departure is auto-computed on the same date and locked.
+              * Phase 1 enforces strictly single-day visits during operating hours (5:00 AM – 10:00 PM). Departure must be on the same calendar day as arrival.
             </span>
           </div>
 
@@ -688,8 +705,54 @@ export default function InviteVisitor({ history }) {
               Share this dedicated link with your guest. They can fill out their vehicle and visitor details prior to arriving at the gate.
             </p>
 
-            <div style={{ width: '100%', background: '#faf6f0', border: '1.5px solid #ede5da', borderRadius: '16px', padding: '0.85rem', fontSize: '0.76rem', wordBreak: 'break-all', color: '#1c1917', marginBottom: '1.2rem', fontWeight: '600' }}>
-              {inviteLink}
+            <div style={{ width: '100%', background: '#faf6f0', border: '1.5px solid #ede5da', borderRadius: '16px', padding: '0.85rem', marginBottom: '1.2rem', textAlign: 'left' }}>
+              <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#57534e', display: 'block', marginBottom: '0.35rem' }}>
+                Single-Use Guest Invite Link
+              </label>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  readOnly
+                  value={inviteLink}
+                  onClick={(e) => e.target.select()}
+                  style={{
+                    margin: 0,
+                    fontSize: '0.78rem',
+                    background: '#ffffff',
+                    flex: 1,
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    padding: '0.55rem',
+                    color: '#1c1917',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(inviteLink);
+                    setCopiedLink(true);
+                    setToastMsg('Invite link copied to clipboard!');
+                    setTimeout(() => setCopiedLink(false), 2000);
+                  }}
+                  style={{
+                    margin: 0,
+                    whiteSpace: 'nowrap',
+                    background: copiedLink ? '#15803d' : '#b84018',
+                    border: 'none',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    fontSize: '0.78rem',
+                    borderRadius: '8px',
+                    padding: '0.55rem 0.85rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {copiedLink ? '✓ Copied!' : '📋 Copy Link'}
+                </button>
+              </div>
             </div>
 
             <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
@@ -703,18 +766,6 @@ export default function InviteVisitor({ history }) {
                   📲 Share via WhatsApp
                 </button>
               </a>
-
-              <button
-                type="button"
-                onClick={() => {
-                  navigator.clipboard.writeText(inviteLink);
-                  setToastMsg('Invite link copied to clipboard!');
-                }}
-                className="host-btn-primary"
-                style={{ width: '100%', padding: '0.85rem', cursor: 'pointer' }}
-              >
-                📋 Copy Link
-              </button>
 
               <button
                 type="button"
