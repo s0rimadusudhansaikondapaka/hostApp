@@ -302,7 +302,7 @@ export default function HostHome({ history }) {
         {/* 7. Section Header with Underline Accent matching Attachment 1 */}
         <div className="host-section-header">
           <div className="host-section-title-wrap">
-            <h3 className="host-section-title">Assigned Visitors</h3>
+            <h3 className="host-section-title">INVITED VISITORS</h3>
             <div className="host-section-underline"></div>
           </div>
           <div className="host-section-count">
