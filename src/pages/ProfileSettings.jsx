@@ -20,8 +20,9 @@ import {
   setBaseUrl,
   getFrontendUrl,
   setFrontendUrl,
+  changePassword,
 } from '../services/api';
-import { User, Users, Plus, Trash2, Globe, LogOut, Shield, Home, Building, QrCode, ZoomIn, ZoomOut, Share2, Download, Copy, Check } from 'lucide-react';
+import { User, Users, Plus, Trash2, Globe, LogOut, Shield, Home, Building, QrCode, ZoomIn, ZoomOut, Share2, Download, Copy, Check, KeyRound, Eye, EyeOff, X, AlertCircle } from 'lucide-react';
 import QRCode from 'qrcode';
 
 export default function ProfileSettings({ history }) {
@@ -40,6 +41,49 @@ export default function ProfileSettings({ history }) {
   const [copiedPass, setCopiedPass] = useState(false);
   const [showAdvancedServer, setShowAdvancedServer] = useState(false);
   const [showLogoutAlert, setShowLogoutAlert] = useState(false);
+
+  // Change password modal state
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [changePassLoading, setChangePassLoading] = useState(false);
+  const [changePassError, setChangePassError] = useState('');
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setChangePassError('');
+    if (!currentPassword) {
+      setChangePassError('Current password is required.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setChangePassError('New password must be at least 6 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setChangePassError('New passwords do not match.');
+      return;
+    }
+    setChangePassLoading(true);
+    try {
+      const res = await changePassword(currentPassword, newPassword);
+      if (res?.success) {
+        setToastMsg('Password updated successfully!');
+        setShowChangePasswordModal(false);
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        setChangePassError(res?.message || 'Failed to change password.');
+      }
+    } catch (err) {
+      setChangePassError(err.response?.data?.message || 'Server error changing password.');
+    } finally {
+      setChangePassLoading(false);
+    }
+  };
 
   const effectivePassCode = user?.pass_code || getHostPassCode(user);
 
@@ -272,6 +316,27 @@ export default function ProfileSettings({ history }) {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* 3b. Security & Password Management */}
+          <div style={{ background: '#ffffff', border: '1.5px solid #ede5da', borderRadius: '20px', padding: '1.2rem', marginBottom: '1.2rem', boxShadow: '0 2px 8px rgba(184, 64, 24, 0.04)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                <KeyRound size={18} color="#b84018" />
+                <h3 style={{ margin: 0, fontSize: '0.98rem', fontWeight: '800', color: '#1c1917' }}>Security &amp; Password</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setShowChangePasswordModal(true); setChangePassError(''); }}
+                className="host-btn-primary"
+                style={{ padding: '0.35rem 0.85rem', fontSize: '0.75rem', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+              >
+                <KeyRound size={13} /> Change Password
+              </button>
+            </div>
+            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.76rem', color: '#78716c', lineHeight: 1.4 }}>
+              Keep your Ashram Host account safe by updating your password regularly.
+            </p>
           </div>
 
           {/* 4. API & Network Configuration */}
@@ -575,30 +640,105 @@ export default function ProfileSettings({ history }) {
             <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: '0.6rem' }}>
               <button
                 type="button"
-                className="host-btn-primary"
-                onClick={() => {
-                  const fUrl = getFrontendUrl();
-                  const passUrl = `${fUrl}/?pass=${effectivePassCode}`;
-                  const shareText = `Jay Sai Ram! Here is my official Ashram Host Gate Pass:\n\nHost: ${user?.name || 'Ashram Host'}\nRole: ${user?.role || 'Host'}\nPasscode: ${effectivePassCode}\nValidity: Permanent\n\nDigital Pass: ${passUrl}`;
-                  if (navigator.share) {
-                    navigator.share({ title: 'Host Gate Pass', text: shareText, url: passUrl }).catch(() => {});
-                  } else {
-                    window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
-                  }
-                }}
-                style={{ width: '100%', padding: '0.85rem' }}
-              >
-                <Share2 size={16} /> Share via WhatsApp
-              </button>
-
-              <button
-                type="button"
                 onClick={() => setShowHostPassModal(false)}
                 style={{ width: '100%', background: 'transparent', color: '#78716c', border: 'none', padding: '0.6rem', fontWeight: '700', fontSize: '0.82rem', cursor: 'pointer' }}
               >
                 Close
               </button>
             </div>
+          </div>
+        </IonModal>
+
+        {/* Change Password Modal */}
+        <IonModal
+          isOpen={showChangePasswordModal}
+          onDidDismiss={() => setShowChangePasswordModal(false)}
+          style={{ '--max-width': '420px', '--height': 'auto', '--border-radius': '16px' }}
+        >
+          <div style={{ background: '#ffffff', padding: '1.4rem', borderRadius: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1.5px solid #f0e6da', paddingBottom: '0.6rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: '#1c1917', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <KeyRound size={20} color="#b84018" /> Change Password
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowChangePasswordModal(false)}
+                style={{ background: 'none', border: 'none', color: '#78716c', cursor: 'pointer', padding: '0.2rem' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {changePassError && (
+              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '0.55rem 0.8rem', borderRadius: '10px', fontSize: '0.78rem', marginBottom: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <AlertCircle size={15} style={{ flexShrink: 0 }} />
+                <div>{changePassError}</div>
+              </div>
+            )}
+
+            <form onSubmit={handleChangePassword}>
+              <label className="host-label" style={{ marginTop: 0 }}>Current Password *</label>
+              <div style={{ position: 'relative', marginBottom: '0.8rem' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="host-input"
+                  placeholder="Enter current password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#a8a29e' }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+
+              <label className="host-label">New Password (min 6 chars) *</label>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="host-input"
+                placeholder="Enter new password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                minLength={6}
+                style={{ marginBottom: '0.8rem' }}
+              />
+
+              <label className="host-label">Confirm New Password *</label>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="host-input"
+                placeholder="Re-type new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
+                style={{ marginBottom: '1.2rem' }}
+              />
+
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowChangePasswordModal(false)}
+                  style={{ background: '#faf6f0', border: '1px solid #ede5da', color: '#78716c', padding: '0.65rem 1rem', borderRadius: '12px', fontSize: '0.82rem', fontWeight: 'bold', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={changePassLoading}
+                  className="host-btn-primary"
+                  style={{ padding: '0.65rem 1.2rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: changePassLoading ? 'not-allowed' : 'pointer' }}
+                >
+                  <KeyRound size={15} />
+                  {changePassLoading ? 'Updating...' : 'Update Password'}
+                </button>
+              </div>
+            </form>
           </div>
         </IonModal>
 
