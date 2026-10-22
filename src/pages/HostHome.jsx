@@ -120,7 +120,7 @@ export default function HostHome({ history }) {
             <OneWorldOneFamilyLogo size={36} showText={false} variant="navbar" speed="normal" />
             <div>
               <h2 style={{ margin: 0, fontSize: '1.05rem', fontWeight: '800', color: '#1c1917', letterSpacing: '-0.01em' }}>Ashram Host</h2>
-              <span style={{ fontSize: '0.72rem', color: '#78716c', fontWeight: '600' }}>Sri Sathya Sai Ashram</span>
+              <span style={{ fontSize: '0.72rem', color: '#78716c', fontWeight: '600' }}>Sathya Sai Grama</span>
             </div>
           </div>
           <IonButtons slot="end">
