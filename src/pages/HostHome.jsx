@@ -297,14 +297,7 @@ export default function HostHome({ history }) {
           >
             ⏳ Pending ({pendingApprovals.length})
           </button>
-          <button 
-            type="button"
-            className={`host-filter-chip ${activeFilter === 'VIP' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('VIP')}
-          >
-            ✨ VIP Guests
-          </button>
-        </div>
+          </div>
 
         {/* 7. Section Header with Underline Accent matching Attachment 1 */}
         <div className="host-section-header">
