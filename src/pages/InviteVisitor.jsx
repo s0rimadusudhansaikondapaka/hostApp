@@ -383,8 +383,8 @@ export default function InviteVisitor({ history }) {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: isVipHost ? '1fr' : '1fr 1fr', gap: '0.6rem', marginTop: '0.4rem' }}>
-              {!isVipHost && (
+            {!isVipHost && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', marginTop: '0.4rem' }}>
                 <div>
                   <label className="host-label">Visitor Category</label>
                   <select className="host-input" value={category} onChange={(e) => setCategory(e.target.value)}>
@@ -396,18 +396,18 @@ export default function InviteVisitor({ history }) {
                     <option value="VENDOR">Vendor / Contractor</option>
                   </select>
                 </div>
-              )}
-              <div>
-                <label className="host-label">Visit Type</label>
-                <select className="host-input" value={visitType} onChange={(e) => setVisitType(e.target.value)}>
-                  <option value="HOME">Resident / Home Visit</option>
-                  <option value="OFFICE">Department / Office Visit</option>
-                  <option value="BHAJAN">Ashram Bhajan Visit</option>
-                  <option value="EVENT">Ashram Event Visit</option>
-                  <option value="TOUR">Ashram Tour Visit</option>
-                </select>
+                <div>
+                  <label className="host-label">Visit Type</label>
+                  <select className="host-input" value={visitType} onChange={(e) => setVisitType(e.target.value)}>
+                    <option value="HOME">Resident / Home Visit</option>
+                    <option value="OFFICE">Department / Office Visit</option>
+                    <option value="BHAJAN">Ashram Bhajan Visit</option>
+                    <option value="EVENT">Ashram Event Visit</option>
+                    <option value="TOUR">Ashram Tour Visit</option>
+                  </select>
+                </div>
               </div>
-            </div>
+            )}
 
             <div style={{ marginTop: '0.4rem' }}>
               <label className="host-label">Email (Optional)</label>
@@ -589,58 +589,60 @@ export default function InviteVisitor({ history }) {
             ))}
           </div>
 
-          {/* Section 5: Accommodation & Remarks */}
+          {/* Section 5: Remarks (Issues #21, #22, #27) */}
           <div style={{ background: '#ffffff', border: '1.5px solid #ede5da', borderRadius: '20px', padding: '1.1rem', marginBottom: '1.5rem', boxShadow: '0 2px 8px rgba(184, 64, 24, 0.04)' }}>
             <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.92rem', fontWeight: '800', color: '#b84018', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <span>5.</span> Accommodation &amp; Remarks
+              <span>5.</span> {isVipHost ? 'Remarks' : 'Accommodation & Remarks'}
             </h3>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#faf6f0', padding: '0.8rem', borderRadius: '14px', border: '1.5px solid #ede5da', marginBottom: '0.8rem' }}>
-              <div>
-                <span style={{ fontSize: '0.84rem', fontWeight: '800', color: '#1c1917' }}>Accommodation Required?</span>
-                <p style={{ margin: 0, fontSize: '0.72rem', color: '#78716c' }}>Overnight ashram room stay approval</p>
+            {!isVipHost && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#faf6f0', padding: '0.8rem', borderRadius: '14px', border: '1.5px solid #ede5da', marginBottom: '0.8rem' }}>
+                <div>
+                  <span style={{ fontSize: '0.84rem', fontWeight: '800', color: '#1c1917' }}>Accommodation Required?</span>
+                  <p style={{ margin: 0, fontSize: '0.72rem', color: '#78716c' }}>Overnight ashram room stay approval</p>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setAccommodationRequired(true)}
+                    style={{ 
+                      padding: '0.4rem 0.85rem', 
+                      borderRadius: '9999px', 
+                      border: accommodationRequired ? '2px solid #b84018' : '1.5px solid #ede5da', 
+                      background: accommodationRequired ? '#b84018' : '#ffffff', 
+                      color: accommodationRequired ? '#ffffff' : '#57534e', 
+                      fontWeight: '800', 
+                      fontSize: '0.76rem', 
+                      cursor: 'pointer' 
+                    }}
+                  >
+                    Yes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAccommodationRequired(false)}
+                    style={{ 
+                      padding: '0.4rem 0.85rem', 
+                      borderRadius: '9999px', 
+                      border: !accommodationRequired ? '2px solid #1c1917' : '1.5px solid #ede5da', 
+                      background: !accommodationRequired ? '#1c1917' : '#ffffff', 
+                      color: !accommodationRequired ? '#ffffff' : '#57534e', 
+                      fontWeight: '800', 
+                      fontSize: '0.76rem', 
+                      cursor: 'pointer' 
+                    }}
+                  >
+                    No
+                  </button>
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button
-                  type="button"
-                  onClick={() => setAccommodationRequired(true)}
-                  style={{ 
-                    padding: '0.4rem 0.85rem', 
-                    borderRadius: '9999px', 
-                    border: accommodationRequired ? '2px solid #b84018' : '1.5px solid #ede5da', 
-                    background: accommodationRequired ? '#b84018' : '#ffffff', 
-                    color: accommodationRequired ? '#ffffff' : '#57534e', 
-                    fontWeight: '800', 
-                    fontSize: '0.76rem', 
-                    cursor: 'pointer' 
-                  }}
-                >
-                  Yes
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAccommodationRequired(false)}
-                  style={{ 
-                    padding: '0.4rem 0.85rem', 
-                    borderRadius: '9999px', 
-                    border: !accommodationRequired ? '2px solid #1c1917' : '1.5px solid #ede5da', 
-                    background: !accommodationRequired ? '#1c1917' : '#ffffff', 
-                    color: !accommodationRequired ? '#ffffff' : '#57534e', 
-                    fontWeight: '800', 
-                    fontSize: '0.76rem', 
-                    cursor: 'pointer' 
-                  }}
-                >
-                  No
-                </button>
-              </div>
-            </div>
+            )}
 
-            <label className="host-label">Remarks for Security / Approver</label>
+            <label className="host-label">{isVipHost ? 'Remarks (Optional)' : 'Remarks for Security / Approver'}</label>
             <textarea
               rows={2}
               className="host-input"
-              placeholder="Add optional notes or purpose details"
+              placeholder={isVipHost ? 'Add optional remarks or notes' : 'Add optional notes or purpose details'}
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
             />
