@@ -196,61 +196,6 @@ export default function HostHome({ history }) {
           </div>
         </div>
 
-        {/* Carousel indicator dots underneath matching Attachment 2 */}
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', margin: '0.65rem 0 0.2rem 0' }}>
-          <span style={{ width: '18px', height: '6px', borderRadius: '9999px', background: '#b84018', display: 'inline-block' }}></span>
-          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f5d0bd', display: 'inline-block' }}></span>
-          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f5d0bd', display: 'inline-block' }}></span>
-        </div>
-
-        {/* 2. Motivational Seva Card matching Attachment 2 */}
-        <div className="host-seva-card">
-          <div style={{ 
-            width: '48px', 
-            height: '48px', 
-            borderRadius: '50%', 
-            overflow: 'hidden',
-            border: '2px solid #b84018', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            flexShrink: 0,
-            boxShadow: '0 3px 10px rgba(184, 64, 24, 0.25)',
-            background: '#faf6f0'
-          }}>
-            <img 
-              src="/madhu_sudhan_sai.jpg" 
-              alt="Sri Madhusudan Sai" 
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                objectPosition: 'center 12%',
-                display: 'block'
-              }}
-            />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <h3 style={{ margin: '0 0 0.15rem 0', fontSize: '0.92rem', fontWeight: '800', color: '#1c1917' }}>
-              Together, we welcome every guest
-            </h3>
-            <p style={{ margin: 0, fontSize: '0.74rem', color: '#78716c', lineHeight: '1.3' }}>
-              Thank you for your commitment to Seva &amp; safe hospitality.
-            </p>
-          </div>
-          <div style={{ 
-            background: '#fef3c7', 
-            color: '#b45309', 
-            padding: '3px 8px', 
-            borderRadius: '9999px', 
-            fontSize: '0.68rem', 
-            fontWeight: '800',
-            flexShrink: 0
-          }}>
-            SEVA
-          </div>
-        </div>
-
         {/* 3. 2x2 Action Tiles Grid matching Attachment 2 */}
         <div className="host-tiles-grid">
           {/* Tile 1: Add Invite */}
