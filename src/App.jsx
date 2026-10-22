@@ -27,6 +27,7 @@ import VisitorDetails from './pages/VisitorDetails';
 import ActiveVisitors from './pages/ActiveVisitors';
 import PastVisitors from './pages/PastVisitors';
 import ProfileSettings from './pages/ProfileSettings';
+import ResetPassword from './pages/ResetPassword';
 
 setupIonicReact();
 
@@ -64,6 +65,8 @@ function MainLayout() {
             return <Login {...props} />;
           }}
         />
+
+        <Route exact path="/reset-password" component={ResetPassword} />
 
         <ProtectedRoute exact path="/home" component={HostHome} />
         <ProtectedRoute exact path="/invite-visitor" component={InviteVisitor} />

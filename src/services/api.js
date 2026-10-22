@@ -279,3 +279,35 @@ export const getSampleHostRegistrations = () => {
     },
   ];
 };
+
+// Password Management Services
+export const forgotPassword = async (identifier) => {
+  const baseUrl = getBaseUrl();
+  const res = await axios.post(`${baseUrl}/auth/forgot-password`, {
+    identifier,
+    app_url: window.location.origin,
+  });
+  return res.data;
+};
+
+export const verifyResetToken = async (token) => {
+  const baseUrl = getBaseUrl();
+  const res = await axios.get(`${baseUrl}/auth/verify-reset-token`, { params: { token } });
+  return res.data;
+};
+
+export const resetPassword = async (token, newPassword) => {
+  const baseUrl = getBaseUrl();
+  const res = await axios.post(`${baseUrl}/auth/reset-password`, { token, newPassword });
+  return res.data;
+};
+
+export const changePassword = async (currentPassword, newPassword) => {
+  const baseUrl = getBaseUrl();
+  const res = await axios.post(
+    `${baseUrl}/auth/change-password`,
+    { currentPassword, newPassword },
+    { headers: getAuthHeaders() }
+  );
+  return res.data;
+};
