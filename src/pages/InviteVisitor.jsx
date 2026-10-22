@@ -108,7 +108,36 @@ export default function InviteVisitor({ history }) {
 
   const handleArrivalChange = (val) => {
     setValidFrom(val);
-    setValidUntil(computeSameDayDeparture(val));
+    if (!val) return;
+    const fromD = new Date(val);
+    const dateStr = val.split('T')[0];
+
+    // Compute automatic same-day departure
+    let depD = new Date(fromD.getTime() + 4 * 60 * 60 * 1000);
+    const maxD = new Date(`${dateStr}T22:00:00`);
+    if (depD > maxD) depD = maxD;
+    if (depD <= fromD) depD = new Date(fromD.getTime() + 30 * 60 * 1000);
+
+    const pad = (n) => String(n).padStart(2, '0');
+    const computedDep = `${dateStr}T${pad(depD.getHours())}:${pad(depD.getMinutes())}`;
+    setValidUntil(computedDep);
+  };
+
+  const handleDepartureChange = (val) => {
+    setValidUntil(val);
+    if (!val) return;
+    const depD = new Date(val);
+    const fromD = new Date(validFrom);
+    const dateStr = val.split('T')[0];
+
+    // If arrival is greater than departure or empty, adjust arrival to earlier on same day
+    if (!validFrom || fromD >= depD || validFrom.split('T')[0] !== dateStr) {
+      let arrD = new Date(depD.getTime() - 2 * 60 * 60 * 1000);
+      const minD = new Date(`${dateStr}T05:00:00`);
+      if (arrD < minD) arrD = minD;
+      const pad = (n) => String(n).padStart(2, '0');
+      setValidFrom(`${dateStr}T${pad(arrD.getHours())}:${pad(arrD.getMinutes())}`);
+    }
   };
 
   // Vehicles (Up to 5)
@@ -170,6 +199,19 @@ export default function InviteVisitor({ history }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Input Validations (Issue #23)
+    const trimmedName = fullName.trim();
+    if (trimmedName.length < 3 || trimmedName.length > 50) {
+      setError('Visitor Name must be between 3 and 50 characters long.');
+      return;
+    }
+
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (phoneDigits.length < 10 || phoneDigits.length > 15) {
+      setError('Phone number must have between 10 and 15 digits (currently ' + phoneDigits.length + ' digits).');
+      return;
+    }
 
     const now = new Date();
     const fromDate = new Date(validFrom);
@@ -355,11 +397,16 @@ export default function InviteVisitor({ history }) {
             <input
               type="text"
               required
+              minLength={3}
+              maxLength={50}
               className="host-input"
-              placeholder="Enter full name"
+              placeholder="Enter full name (3 to 50 characters)"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
             />
+            <div style={{ fontSize: '0.72rem', color: fullName.trim().length >= 3 && fullName.trim().length <= 50 ? '#15803d' : '#78716c', marginTop: '3px', fontWeight: '600' }}>
+              Characters: {fullName.trim().length} / 50 (min 3)
+            </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', marginTop: '0.4rem' }}>
               <div>
@@ -367,11 +414,15 @@ export default function InviteVisitor({ history }) {
                 <input
                   type="tel"
                   required
+                  maxLength={15}
                   className="host-input"
-                  placeholder="e.g. 9876543210"
+                  placeholder="e.g. 9876543210 (10 to 15 digits)"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />
+                <div style={{ fontSize: '0.72rem', color: phone.replace(/\D/g, '').length >= 10 && phone.replace(/\D/g, '').length <= 15 ? '#15803d' : '#b45309', marginTop: '3px', fontWeight: '600' }}>
+                  Digits: {phone.replace(/\D/g, '').length} / 15 (min 10)
+                </div>
               </div>
               <div>
                 <label className="host-label">Gender *</label>
@@ -462,11 +513,11 @@ export default function InviteVisitor({ history }) {
                 <input
                   type="datetime-local"
                   required
-                  min={validFrom || getMinDateTime()}
-                  max={validFrom ? `${validFrom.split('T')[0]}T22:00` : undefined}
+                  min={validFrom ? validFrom : (validUntil ? `${validUntil.split('T')[0]}T05:00` : getMinDateTime())}
+                  max={validFrom ? `${validFrom.split('T')[0]}T22:00` : (validUntil ? `${validUntil.split('T')[0]}T22:00` : undefined)}
                   className="host-input"
                   value={validUntil}
-                  onChange={(e) => setValidUntil(e.target.value)}
+                  onChange={(e) => handleDepartureChange(e.target.value)}
                 />
               </div>
             </div>
