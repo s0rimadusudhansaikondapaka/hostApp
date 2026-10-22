@@ -47,7 +47,10 @@ export default function HostHome({ history }) {
 
   // Search & Filter State matching Attachment 1 & 2
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('ALL'); // 'ALL', 'PENDING', 'INSIDE', 'VIP'
+  const [activeFilter, setActiveFilter] = useState('ALL'); // 'ALL', 'PENDING', 'INSIDE', 'INVITED', 'ARCHIVAL'
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [filterVisitType, setFilterVisitType] = useState('ALL');
+  const [filterCategory, setFilterCategory] = useState('ALL');
 
   const effectivePassCode = user?.pass_code || getHostPassCode(user);
 
@@ -96,17 +99,51 @@ export default function HostHome({ history }) {
     'Employee Host';
 
   // Filtered Visitors matching search & filter chips
+  const now = new Date();
+
+  // Helper categorization matching Issue #38
+  const isYetToCome = (r) => {
+    const isInside = r.status === 'INSIDE_CAMPUS' || r.presence_status === 'currently_inside';
+    const isCheckedOut = r.status === 'CHECKED_OUT';
+    const isPastSDT = r.valid_until && new Date(r.valid_until) < now;
+    return !isInside && !isCheckedOut && !isPastSDT && (r.status === 'APPROVED' || r.status === 'PENDING_L1');
+  };
+
+  const isLapsedArchival = (r) => {
+    const isInside = r.status === 'INSIDE_CAMPUS' || r.presence_status === 'currently_inside';
+    const isCheckedOut = r.status === 'CHECKED_OUT';
+    const isPastSDT = r.valid_until && new Date(r.valid_until) < now;
+    return !isInside && !isCheckedOut && isPastSDT;
+  };
+
   const filteredVisitors = registrations.filter((r) => {
-    const matchesSearch = !searchQuery || 
-      (r.visitor_name && r.visitor_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (r.pass_code && r.pass_code.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (r.visitor_phone && r.visitor_phone.includes(searchQuery));
+    // Multi-field search
+    const q = (searchQuery || '').trim().toLowerCase();
+    const visName = (r.visitor_name || r.full_name || r.name || '').toLowerCase();
+    const passCode = (r.pass_code || '').toLowerCase();
+    const phone = (r.visitor_phone || r.phone || '');
+    const purpose = (r.purpose || '').toLowerCase();
+    const vehNo = (r.vehicle_no || r.registered_plate_number || '').toLowerCase();
+
+    const matchesSearch = !q || 
+      visName.includes(q) ||
+      passCode.includes(q) ||
+      phone.includes(q) ||
+      purpose.includes(q) ||
+      vehNo.includes(q);
 
     if (!matchesSearch) return false;
 
+    // Filter Chips & Categorization
     if (activeFilter === 'PENDING') return r.status === 'PENDING_L1';
     if (activeFilter === 'INSIDE') return r.status === 'INSIDE_CAMPUS' || r.presence_status === 'currently_inside';
-    if (activeFilter === 'VIP') return r.visitor_category === 'VIP' || r.is_vvip;
+    if (activeFilter === 'INVITED') return isYetToCome(r);
+    if (activeFilter === 'ARCHIVAL') return isLapsedArchival(r);
+
+    // Advanced filters from filter modal
+    if (filterVisitType !== 'ALL' && (r.visit_type || 'HOME').toUpperCase() !== filterVisitType.toUpperCase()) return false;
+    if (filterCategory !== 'ALL' && (r.visitor_category || 'GENERAL').toUpperCase() !== filterCategory.toUpperCase()) return false;
+
     return true;
   });
 
@@ -267,7 +304,7 @@ export default function HostHome({ history }) {
           <div className="host-search-divider"></div>
           <button 
             type="button" 
-            onClick={() => setActiveFilter(activeFilter === 'ALL' ? 'PENDING' : 'ALL')}
+            onClick={() => setShowFilterModal(true)}
             style={{ background: 'none', border: 'none', padding: '0 4px', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
           >
             <SlidersHorizontal size={18} color="#b84018" />
@@ -457,7 +494,110 @@ export default function HostHome({ history }) {
           )}
         </div>
 
-        </IonContent>
+  
+        {/* Filter Modal for Search & Categories (Issue #37) */}
+        <IonModal isOpen={showFilterModal} onDidDismiss={() => setShowFilterModal(false)}>
+          <div style={{ padding: '1.5rem', background: '#ffffff', height: '100%', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', borderBottom: '1.5px solid #f0e6da', paddingBottom: '0.8rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <SlidersHorizontal size={20} color="#b84018" />
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: '#1c1917' }}>Filter Visitors</h3>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setShowFilterModal(false)}
+                style={{ background: '#f5eee6', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ marginBottom: '1.2rem' }}>
+              <label className="host-label" style={{ marginTop: 0 }}>Visitor Status</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '0.4rem' }}>
+                {[
+                  { key: 'ALL', label: 'All Statuses' },
+                  { key: 'INVITED', label: 'Invited (Active)' },
+                  { key: 'INSIDE', label: 'Inside Campus' },
+                  { key: 'PENDING', label: 'Pending L1' },
+                  { key: 'ARCHIVAL', label: 'Did Not Arrive' }
+                ].map(opt => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => setActiveFilter(opt.key)}
+                    style={{
+                      padding: '0.55rem 0.6rem',
+                      borderRadius: '12px',
+                      border: activeFilter === opt.key ? '2px solid #b84018' : '1px solid #ebdccc',
+                      background: activeFilter === opt.key ? '#fdede3' : '#faf6f0',
+                      color: activeFilter === opt.key ? '#9a3412' : '#57534e',
+                      fontSize: '0.78rem',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '1.2rem' }}>
+              <label className="host-label">Visit Type</label>
+              <select 
+                className="host-input" 
+                value={filterVisitType} 
+                onChange={(e) => setFilterVisitType(e.target.value)}
+              >
+                <option value="ALL">All Visit Types</option>
+                <option value="HOME">Resident / Home Visit</option>
+                <option value="OFFICE">Department / Office Visit</option>
+                <option value="BHAJAN">Ashram Bhajan Visit</option>
+                <option value="EVENT">Ashram Event Visit</option>
+                <option value="TOUR">Ashram Tour Visit</option>
+              </select>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label className="host-label">Visitor Category</label>
+              <select 
+                className="host-input" 
+                value={filterCategory} 
+                onChange={(e) => setFilterCategory(e.target.value)}
+              >
+                <option value="ALL">All Categories</option>
+                <option value="GENERAL">General Visitor</option>
+                <option value="VIP">VIP Guest</option>
+                <option value="FAMILY_MEMBER">Family Member</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.6rem' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveFilter('ALL');
+                  setFilterVisitType('ALL');
+                  setFilterCategory('ALL');
+                  setShowFilterModal(false);
+                }}
+                style={{ flex: 1, padding: '0.75rem', borderRadius: '12px', border: '1px solid #ebdccc', background: '#faf6f0', color: '#57534e', fontWeight: 'bold', fontSize: '0.85rem', cursor: 'pointer' }}
+              >
+                Reset
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowFilterModal(false)}
+                className="host-btn-primary"
+                style={{ flex: 1, padding: '0.75rem', fontWeight: 'bold', fontSize: '0.85rem', cursor: 'pointer' }}
+              >
+                Apply Filters
+              </button>
+            </div>
+          </div>
+        </IonModal>
+      </IonContent>
     </IonPage>
   );
 }
