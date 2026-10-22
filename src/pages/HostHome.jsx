@@ -136,59 +136,57 @@ export default function HostHome({ history }) {
           <IonRefresherContent />
         </IonRefresher>
 
-        {/* 1. Hero Profile Banner matching Attachment 2 */}
+        {/* 1. Hero Profile Banner - Compact Vertical Fit (Issue #32) */}
         <div className="host-hero-banner">
-          {/* Top Row: Translucent Tag + Avatar Initial */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: '0.4rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+            <div style={{ minWidth: 0 }}>
+              <h1 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {user?.name || 'Host'}
+              </h1>
+              <div style={{ fontSize: '0.76rem', color: 'rgba(255, 255, 255, 0.9)', fontWeight: '500', marginTop: '2px' }}>
+                {user?.flat_info || user?.department || 'Sathya Sai Grama'}
+              </div>
+            </div>
             <div style={{ 
-              width: '38px', 
-              height: '38px', 
+              width: '34px', 
+              height: '34px', 
               borderRadius: '50%', 
               background: 'rgba(0, 0, 0, 0.25)', 
               color: '#ffffff', 
               fontWeight: '800', 
-              fontSize: '1.05rem', 
+              fontSize: '0.95rem', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center',
-              border: '1.5px solid rgba(255, 255, 255, 0.3)'
+              border: '1.5px solid rgba(255, 255, 255, 0.3)',
+              flexShrink: 0,
+              marginLeft: '0.6rem'
             }}>
               {userInitial}
             </div>
           </div>
 
-          {/* Middle: Big bold name & subtitle */}
-          <div style={{ marginBottom: '0.85rem' }}>
-            <h1 style={{ margin: '0 0 0.2rem 0', fontSize: '1.45rem', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.02em' }}>
-              {user?.name || 'Ramesh Kumar'} (Host)
-            </h1>
-            <div style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.88)', fontWeight: '500' }}>
-              {hostTypeLabel} • {user?.flat_info || user?.department || 'Karnataka Region'}
-            </div>
-          </div>
-
-          {/* Bottom Row: Scope active & count badge */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginTop: '0.45rem', paddingTop: '0.45rem', borderTop: '1px solid rgba(255, 255, 255, 0.18)' }}>
             <div style={{ 
               background: 'rgba(0, 0, 0, 0.2)', 
               borderRadius: '9999px', 
-              padding: '4px 11px', 
+              padding: '3px 9px', 
               color: '#ffffff', 
-              fontSize: '0.75rem', 
+              fontSize: '0.72rem', 
               fontWeight: '600',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '6px'
+              gap: '5px'
             }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4ade80', display: 'inline-block' }}></span>
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#4ade80', display: 'inline-block' }}></span>
               Host Scope Active
             </div>
             <div style={{ 
               background: 'rgba(0, 0, 0, 0.2)', 
               borderRadius: '9999px', 
-              padding: '4px 12px', 
+              padding: '3px 10px', 
               color: '#ffffff', 
-              fontSize: '0.75rem', 
+              fontSize: '0.72rem', 
               fontWeight: '800'
             }}>
               {registrations.length} Visitors Registered
