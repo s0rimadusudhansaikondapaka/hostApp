@@ -38,8 +38,22 @@ import OneWorldOneFamilyLogo from '../components/OneWorldOneFamilyLogo';
 
 export default function HostHome({ history }) {
   const { user, logout } = useAuth();
-  const [registrations, setRegistrations] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [registrations, setRegistrations] = useState(() => {
+    try {
+      const cached = localStorage.getItem('MYASRAM_HOST_REGISTRATIONS_CACHE');
+      return cached ? JSON.parse(cached) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    try {
+      const cached = localStorage.getItem('MYASRAM_HOST_REGISTRATIONS_CACHE');
+      return !(cached && JSON.parse(cached).length > 0);
+    } catch (e) {
+      return true;
+    }
+  });
   const [hostQrUrl, setHostQrUrl] = useState('');
   const [showHostPassModal, setShowHostPassModal] = useState(false);
   const [qrZoomLevel, setQrZoomLevel] = useState(1);
@@ -59,6 +73,9 @@ export default function HostHome({ history }) {
       const res = await getHostRegistrations();
       if (res?.registrations) {
         setRegistrations(res.registrations);
+        try {
+          localStorage.setItem('MYASRAM_HOST_REGISTRATIONS_CACHE', JSON.stringify(res.registrations));
+        } catch (cErr) {}
       }
     } catch (e) {
       console.warn('Error fetching host registrations:', e);
