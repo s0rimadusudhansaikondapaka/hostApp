@@ -139,22 +139,7 @@ export default function HostHome({ history }) {
         {/* 1. Hero Profile Banner matching Attachment 2 */}
         <div className="host-hero-banner">
           {/* Top Row: Translucent Tag + Avatar Initial */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.7rem' }}>
-            <div style={{ 
-              background: 'rgba(255, 255, 255, 0.22)', 
-              backdropFilter: 'blur(8px)', 
-              borderRadius: '9999px', 
-              padding: '4px 10px', 
-              fontSize: '0.7rem', 
-              fontWeight: '800', 
-              letterSpacing: '0.6px',
-              textTransform: 'uppercase',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}>
-              <span>☀️</span> {hostTypeLabel.toUpperCase()} &amp; OPS
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: '0.4rem' }}>
             <div style={{ 
               width: '38px', 
               height: '38px', 
