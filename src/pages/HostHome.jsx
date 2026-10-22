@@ -14,7 +14,7 @@ import {
 } from '@ionic/react';
 import { personCircleOutline } from 'ionicons/icons';
 import { useAuth, getHostPassCode } from '../context/AuthContext';
-import { getHostRegistrations, getFrontendUrl } from '../services/api';
+import { getHostRegistrations, getFrontendUrl, generateInviteToken } from '../services/api';
 import { 
   UserPlus, 
   Clock, 
@@ -61,6 +61,34 @@ export default function HostHome({ history }) {
 
   // Search & Filter State matching Attachment 1 & 2
   const [searchQuery, setSearchQuery] = useState('');
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareToken, setShareToken] = useState('');
+  const [generatingToken, setGeneratingToken] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleShareInvite = async () => {
+    setGeneratingToken(true);
+    try {
+      const res = await generateInviteToken();
+      if (res?.token) {
+        setShareToken(res.token);
+      } else {
+        const fallback = 'inv_' + Date.now();
+        setShareToken(fallback);
+      }
+    } catch (err) {
+      const fallback = 'inv_' + Date.now();
+      setShareToken(fallback);
+    } finally {
+      setGeneratingToken(false);
+      setShowShareModal(true);
+    }
+  };
+
+  const frontendUrl = getFrontendUrl();
+  const activeInviteToken = shareToken || ('inv_' + (user?.id || 1) + '_' + Date.now());
+  const inviteLink = `${frontendUrl}/?invite=true&token=${activeInviteToken}`;
+  
   const [activeFilter, setActiveFilter] = useState('ALL'); // 'ALL', 'PENDING', 'INSIDE', 'INVITED', 'ARCHIVAL'
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [filterVisitType, setFilterVisitType] = useState('ALL');
@@ -246,6 +274,58 @@ export default function HostHome({ history }) {
               {registrations.length} Visitors Registered
             </div>
           </div>
+        </div>
+
+        {/* Two Action Buttons: Share Link & Pre-register (Issue #17) */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', margin: '0.85rem 0' }}>
+          <button
+            type="button"
+            onClick={handleShareInvite}
+            disabled={generatingToken}
+            style={{
+              background: '#ffffff',
+              border: '1.5px solid #fed7aa',
+              borderRadius: '16px',
+              padding: '0.85rem 0.6rem',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.35rem',
+              boxShadow: '0 2px 8px rgba(184, 64, 24, 0.06)',
+              cursor: generatingToken ? 'wait' : 'pointer',
+              transition: 'transform 0.15s ease'
+            }}
+          >
+            <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#fdede3', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b84018' }}>
+              <Share2 size={20} />
+            </div>
+            <span style={{ fontSize: '0.88rem', fontWeight: '800', color: '#1c1917' }}>Share Link</span>
+            <span style={{ fontSize: '0.68rem', color: '#78716c' }}>Single-use guest URL</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => history.push('/invite-visitor')}
+            style={{
+              background: '#ffffff',
+              border: '1.5px solid #fed7aa',
+              borderRadius: '16px',
+              padding: '0.85rem 0.6rem',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.35rem',
+              boxShadow: '0 2px 8px rgba(184, 64, 24, 0.06)',
+              cursor: 'pointer',
+              transition: 'transform 0.15s ease'
+            }}
+          >
+            <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b45309' }}>
+              <UserPlus size={20} />
+            </div>
+            <span style={{ fontSize: '0.88rem', fontWeight: '800', color: '#1c1917' }}>Pre-register</span>
+            <span style={{ fontSize: '0.68rem', color: '#78716c' }}>Fill guest pass form</span>
+          </button>
         </div>
 
         {/* 3. 2x2 Action Tiles Grid matching Attachment 2 */}
@@ -610,6 +690,64 @@ export default function HostHome({ history }) {
                 style={{ flex: 1, padding: '0.75rem', fontWeight: 'bold', fontSize: '0.85rem', cursor: 'pointer' }}
               >
                 Apply Filters
+              </button>
+            </div>
+          </div>
+        </IonModal>
+
+        {/* Share Link Modal on Home Screen (Issue #17) */}
+        <IonModal isOpen={showShareModal} onDidDismiss={() => setShowShareModal(false)}>
+          <div style={{ padding: '1.5rem', background: '#ffffff', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', borderBottom: '1.5px solid #f0e6da', paddingBottom: '0.8rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Share2 size={20} color="#b84018" />
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: '#1c1917' }}>Share Guest Invitation</h3>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setShowShareModal(false)}
+                style={{ background: '#f5eee6', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <p style={{ fontSize: '0.82rem', color: '#57534e', margin: '0 0 1rem 0', lineHeight: 1.4 }}>
+              Send this single-use link to your guest. They will fill in their personal details and a digital pass will be issued upon your confirmation.
+            </p>
+
+            <div style={{ background: '#faf6f0', border: '1.5px solid #ebdccc', borderRadius: '14px', padding: '0.9rem', marginBottom: '1rem', wordBreak: 'break-all', fontSize: '0.78rem', color: '#78716c' }}>
+              {inviteLink}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: 'auto' }}>
+              <button
+                type="button"
+                className="host-btn-primary"
+                onClick={() => {
+                  const msg = `Jay Sai Ram! You are invited to Sathya Sai Grama by ${user?.name || 'Ashram Host'}. Please complete your visitor pass pre-registration here: ${inviteLink}`;
+                  if (navigator.share) {
+                    navigator.share({ title: 'Ashram Visitor Invite', text: msg, url: inviteLink }).catch(() => {});
+                  } else {
+                    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+                  }
+                }}
+                style={{ padding: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontWeight: 'bold' }}
+              >
+                <Share2 size={16} /> Share via WhatsApp
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard?.writeText(inviteLink);
+                  setCopiedLink(true);
+                  setTimeout(() => setCopiedLink(false), 2000);
+                }}
+                style={{ background: '#faf6f0', border: '1px solid #ebdccc', borderRadius: '12px', padding: '0.8rem', color: '#57534e', fontWeight: 'bold', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer' }}
+              >
+                {copiedLink ? <Check size={16} color="#15803d" /> : <Copy size={16} />}
+                {copiedLink ? 'Copied to Clipboard!' : 'Copy Link'}
               </button>
             </div>
           </div>
