@@ -337,30 +337,7 @@ export default function InviteVisitor({ history }) {
             <IonBackButton defaultHref="/home" text="" color="dark" />
           </IonButtons>
           <IonTitle style={{ fontSize: '1.05rem', fontWeight: '800', color: '#1c1917' }}>Invite Visitor</IonTitle>
-          <IonButtons slot="end">
-            <button
-              type="button"
-              onClick={handleShareInvite}
-              disabled={generatingToken}
-              style={{ 
-                background: '#fdede3', 
-                border: '1.5px solid #fed7aa', 
-                color: '#b84018', 
-                borderRadius: '9999px', 
-                padding: '0.4rem 0.8rem', 
-                fontSize: '0.75rem', 
-                fontWeight: '800', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.35rem', 
-                cursor: generatingToken ? 'wait' : 'pointer', 
-                marginRight: '0.5rem', 
-                opacity: generatingToken ? 0.7 : 1 
-              }}
-            >
-              <Share2 size={13} /> {generatingToken ? 'Generating...' : 'Share Link'}
-            </button>
-          </IonButtons>
+          
         </IonToolbar>
       </IonHeader>
 
