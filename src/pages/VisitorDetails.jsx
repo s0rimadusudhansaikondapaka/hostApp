@@ -190,6 +190,25 @@ export default function VisitorDetails({ match, history }) {
               {visitor?.pass_code || 'GATE-PASS'}
             </div>
 
+            {(visitor?.status === 'REJECTED' || visitor?.rejection_reason) && (
+              <div style={{
+                textAlign: 'left',
+                background: '#fef2f2',
+                border: '1.5px solid #fecaca',
+                borderRadius: '14px',
+                padding: '0.85rem 1rem',
+                marginBottom: '1rem',
+                color: '#991b1b'
+              }}>
+                <div style={{ fontWeight: '800', fontSize: '0.9rem', marginBottom: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <span>❌</span> Pass Request Rejected
+                </div>
+                <div style={{ fontSize: '0.82rem', color: '#7f1d1d' }}>
+                  <strong>Rejection Comments:</strong> {visitor?.rejection_reason || visitor?.remarks || 'No remarks provided.'}
+                </div>
+              </div>
+            )}
+
             {/* Details Table */}
             <div style={{ textAlign: 'left', background: '#faf6f0', borderRadius: '18px', padding: '1rem', border: '1.5px solid #ede5da', fontSize: '0.82rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.45rem 0', borderBottom: '1px solid #ebdccc' }}>

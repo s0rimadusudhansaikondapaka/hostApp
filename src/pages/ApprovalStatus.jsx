@@ -76,6 +76,10 @@ export default function ApprovalStatus({ history }) {
 
   const handleApprovalAction = async (action) => {
     if (!reviewItem) return;
+    if (action === 'REJECT' && !reviewRemarks?.trim()) {
+      setToastMsg('Please enter rejection comments before rejecting.');
+      return;
+    }
     setSubmittingAction(true);
     try {
       const res = await updateApproval(
@@ -314,6 +318,20 @@ export default function ApprovalStatus({ history }) {
                         <p style={{ margin: 0, fontSize: '0.76rem', color: '#78716c' }}>
                           Phone: <strong>{r.visitor_phone}</strong> • Pass: <strong>{r.pass_code || `#${r.id}`}</strong>
                         </p>
+                        {(isRejected || r.rejection_reason) && (
+                          <div style={{
+                            marginTop: '0.5rem',
+                            padding: '0.45rem 0.65rem',
+                            background: '#fef2f2',
+                            border: '1px solid #fee2e2',
+                            borderRadius: '8px',
+                            fontSize: '0.76rem',
+                            color: '#991b1b',
+                            lineHeight: '1.3'
+                          }}>
+                            <strong>Rejection Comments:</strong> {r.rejection_reason || r.remarks || 'No remarks provided.'}
+                          </div>
+                        )}
                         
                       </div>
                     </div>
