@@ -314,9 +314,7 @@ export default function ApprovalStatus({ history }) {
                         <p style={{ margin: 0, fontSize: '0.76rem', color: '#78716c' }}>
                           Phone: <strong>{r.visitor_phone}</strong> • Pass: <strong>{r.pass_code || `#${r.id}`}</strong>
                         </p>
-                        <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.76rem', color: '#57534e' }}>
-                          <strong>Purpose:</strong> {r.purpose || 'Ashram Visit'}
-                        </p>
+                        
                       </div>
                     </div>
 
@@ -443,14 +441,7 @@ export default function ApprovalStatus({ history }) {
                 placeholder="10-digit mobile"
               />
 
-              <label className="host-label">Purpose of Visit</label>
-              <input
-                type="text"
-                className="host-input"
-                value={reviewPurpose}
-                onChange={(e) => setReviewPurpose(e.target.value)}
-                placeholder="Purpose"
-              />
+
 
               {/* People breakdown */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', marginTop: '0.5rem' }}>
@@ -548,25 +539,34 @@ export default function ApprovalStatus({ history }) {
               )}
             </div>
 
+            {/* Guest Photo & ID Proof Verification (Issue #45) */}
             <div style={{ background: '#faf6f0', border: '1.5px solid #ede5da', borderRadius: '18px', padding: '1rem', marginBottom: '1rem' }}>
-              <label className="host-label" style={{ marginTop: 0 }}>Visit Type</label>
-              <select className="host-input" value={reviewVisitType} onChange={(e) => setReviewVisitType(e.target.value)}>
-                <option value="HOME">Resident / Home Visit</option>
-                <option value="OFFICE">Department / Office Visit</option>
-                <option value="BHAJAN">Ashram Bhajan Visit</option>
-                <option value="EVENT">Ashram Event Visit</option>
-                <option value="TOUR">Ashram Tour Visit</option>
-              </select>
+              <div style={{ fontSize: '0.86rem', fontWeight: '800', color: '#b84018', marginBottom: '0.6rem' }}>
+                📷 Guest Photo & ID Proof Verification
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.6rem' }}>
+                <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #ebdccc', padding: '0.6rem', textAlign: 'center' }}>
+                  <span style={{ fontSize: '0.72rem', color: '#78716c', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>Face Photo</span>
+                  {reviewItem?.photo_url ? (
+                    <img src={reviewItem.photo_url} alt="Guest" style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', margin: '0 auto', border: '2px solid #b84018' }} />
+                  ) : (
+                    <div style={{ fontSize: '0.75rem', color: '#a8a29e', padding: '1rem 0' }}>No Photo Provided</div>
+                  )}
+                </div>
+                <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #ebdccc', padding: '0.6rem', textAlign: 'center' }}>
+                  <span style={{ fontSize: '0.72rem', color: '#78716c', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>ID Proof ({reviewItem?.id_type || 'ID'})</span>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#1c1917', marginBottom: '4px' }}>
+                    {reviewItem?.id_card_number || reviewItem?.id_number || 'N/A'}
+                  </div>
+                  {reviewItem?.id_card_image_url ? (
+                    <img src={reviewItem.id_card_image_url} alt="ID Document" style={{ maxHeight: '45px', maxWidth: '100%', borderRadius: '4px', border: '1px solid #e2e8f0', objectFit: 'contain' }} />
+                  ) : (
+                    <div style={{ fontSize: '0.72rem', color: '#a8a29e' }}>No ID Document Uploaded</div>
+                  )}
+                </div>
+              </div>
 
-              <label className="host-label">Priority</label>
-              <select className="host-input" value={reviewPriority} onChange={(e) => setReviewPriority(e.target.value)}>
-                <option value="P1">P1 - Highest / VVIP</option>
-                <option value="P2">P2 - High Priority</option>
-                <option value="P3">P3 - Normal Priority</option>
-                <option value="P4">P4 - Low Priority</option>
-              </select>
-
-              <label className="host-label">Referrer Remarks</label>
+              <label className="host-label" style={{ marginTop: '0.4rem' }}>Referrer Remarks / Rejection Comments</label>
               <textarea
                 rows={2}
                 className="host-input"
