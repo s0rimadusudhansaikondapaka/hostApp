@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   IonPage,
   IonHeader,
@@ -95,6 +95,136 @@ export default function HostHome({ history }) {
   const [filterCategory, setFilterCategory] = useState('ALL');
 
   const effectivePassCode = user?.pass_code || getHostPassCode(user);
+
+  // Issue #44 & #57: In-App Notifications with 1-Week Retention & Status Tracking
+  const [showNotifModal, setShowNotifModal] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
+  const knownStatusMap = useRef(new Map());
+
+  const getStoredNotifications = () => {
+    try {
+      const raw = localStorage.getItem('MYASHRAM_HOST_NOTIFICATIONS_V1');
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      // Auto-purge notifications older than 7 days (1 week retention)
+      const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      return parsed.filter((n) => new Date(n.timestamp).getTime() > oneWeekAgo);
+    } catch (e) {
+      return [];
+    }
+  };
+
+  const [notifications, setNotifications] = useState(getStoredNotifications);
+
+  const saveNotifications = (newList) => {
+    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const pruned = newList.filter((n) => new Date(n.timestamp).getTime() > oneWeekAgo).slice(0, 100);
+    setNotifications(pruned);
+    try {
+      localStorage.setItem('MYASHRAM_HOST_NOTIFICATIONS_V1', JSON.stringify(pruned));
+    } catch (e) {}
+  };
+
+  const unreadNotifCount = notifications.filter((n) => !n.read).length;
+
+  const markAllNotificationsAsRead = () => {
+    const updated = notifications.map((n) => ({ ...n, read: true }));
+    saveNotifications(updated);
+  };
+
+  const clearAllNotifications = () => {
+    saveNotifications([]);
+  };
+
+  const generateNotificationsFromRegistrations = (regs) => {
+    const newNotifs = [];
+    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+    regs.forEach((reg) => {
+      const regId = reg.id;
+      const currentStatus = reg.status;
+      const prevStatus = knownStatusMap.current.get(regId);
+
+      // Trigger events on status change or first discovery
+      if (prevStatus === undefined) {
+        knownStatusMap.current.set(regId, currentStatus);
+        if (currentStatus === 'PENDING_L1' && new Date(reg.created_at || Date.now()).getTime() > oneWeekAgo) {
+          newNotifs.push({
+            id: `${regId}_submitted_${Date.now()}`,
+            regId,
+            passCode: reg.pass_code,
+            title: 'New Guest Invite Submitted',
+            message: `${reg.visitor_name} submitted a self-invite, awaiting your confirmation.`,
+            status: 'Pending Confirmation',
+            timestamp: reg.created_at || new Date().toISOString(),
+            read: false,
+          });
+        }
+      } else if (prevStatus !== currentStatus) {
+        knownStatusMap.current.set(regId, currentStatus);
+        let eventTitle = '';
+        let eventMsg = '';
+        let eventStatus = currentStatus;
+
+        if (currentStatus === 'APPROVED') {
+          eventTitle = 'Pass Confirmed';
+          eventMsg = `Gate pass generated for ${reg.visitor_name} (${reg.pass_code}).`;
+          eventStatus = 'Confirmed';
+        } else if (currentStatus === 'INSIDE_CAMPUS' || reg.presence_status === 'currently_inside') {
+          eventTitle = 'Guest Checked-In';
+          eventMsg = `${reg.visitor_name} has checked-in at security gate.`;
+          eventStatus = 'Checked-in';
+        } else if (currentStatus === 'CHECKED_OUT' || reg.lifecycle_status === 'CHECKED-OUT') {
+          eventTitle = 'Guest Checked-Out';
+          eventMsg = `${reg.visitor_name} has exited campus.`;
+          eventStatus = 'Checked-out';
+        } else if (currentStatus === 'EXPIRED') {
+          eventTitle = 'Pass Expired';
+          eventMsg = `Gate pass for ${reg.visitor_name} (${reg.pass_code}) has expired.`;
+          eventStatus = 'Expired';
+        } else if (currentStatus === 'REJECTED') {
+          eventTitle = 'Invite Rejected';
+          eventMsg = `Invite for ${reg.visitor_name} was rejected.`;
+          eventStatus = 'Rejected';
+        }
+
+        if (eventTitle) {
+          newNotifs.push({
+            id: `${regId}_${currentStatus}_${Date.now()}`,
+            regId,
+            passCode: reg.pass_code,
+            title: eventTitle,
+            message: eventMsg,
+            status: eventStatus,
+            timestamp: new Date().toISOString(),
+            read: false,
+          });
+          setToastMsg(`🔔 ${eventTitle}: ${reg.visitor_name}`);
+        }
+      }
+    });
+
+    if (newNotifs.length > 0) {
+      setNotifications((prev) => {
+        const merged = [...newNotifs, ...prev];
+        const unique = [];
+        const seen = new Set();
+        merged.forEach((item) => {
+          const key = item.id || `${item.regId}_${item.status}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            unique.push(item);
+          }
+        });
+        const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        const pruned = unique.filter((n) => new Date(n.timestamp).getTime() > oneWeekAgo).slice(0, 100);
+        try {
+          localStorage.setItem('MYASHRAM_HOST_NOTIFICATIONS_V1', JSON.stringify(pruned));
+        } catch (e) {}
+        return pruned;
+      });
+    }
+  };
 
   const fetchHostData = async () => {
     try {
@@ -735,6 +865,108 @@ export default function HostHome({ history }) {
             </div>
           </div>
         </IonModal>
+      
+        {/* Issue #57: In-app Notification Bar with 1-Week Retention */}
+        <IonModal isOpen={showNotifModal} onDidDismiss={() => setShowNotifModal(false)}>
+          <div style={{ padding: '1.5rem', background: '#ffffff', height: '100%', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1.5px solid #f0e6da', paddingBottom: '0.75rem', marginBottom: '1rem' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '800', color: '#1c1917' }}>Notifications</h3>
+                <span style={{ fontSize: '0.74rem', color: '#78716c' }}>Retained for 1 week • Auto-purged after 7 days</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                {notifications.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearAllNotifications}
+                    style={{ background: 'none', border: 'none', color: '#b91c1c', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
+                  >
+                    Clear All
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowNotifModal(false)}
+                  style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#78716c' }}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {notifications.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#78716c' }}>
+                <BellOff size={40} color="#cbd5e1" style={{ margin: '0 auto 0.8rem auto', display: 'block' }} />
+                <p style={{ margin: 0, fontWeight: '700', fontSize: '0.9rem' }}>No recent notifications</p>
+                <p style={{ margin: '0.3rem 0 0 0', fontSize: '0.75rem', color: '#94a3b8' }}>Notifications within the last 7 days will appear here.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                {notifications.map((n) => {
+                  const isPending = n.status === 'Pending Confirmation' || n.status === 'PENDING_L1';
+                  const isCheckedIn = n.status === 'Checked-in' || n.status === 'INSIDE_CAMPUS';
+                  const isCheckedOut = n.status === 'Checked-out' || n.status === 'CHECKED_OUT';
+                  const isExpired = n.status === 'Expired' || n.status === 'EXPIRED';
+                  const isRejected = n.status === 'Rejected' || n.status === 'REJECTED';
+
+                  const badgeBg = isCheckedIn ? '#dcfce7' : isPending ? '#fef3c7' : isExpired ? '#fee2e2' : isRejected ? '#fee2e2' : '#e0f2fe';
+                  const badgeColor = isCheckedIn ? '#15803d' : isPending ? '#b45309' : isExpired ? '#b91c1c' : isRejected ? '#b91c1c' : '#0369a1';
+
+                  const timeAgo = (dateStr) => {
+                    const diffMs = Date.now() - new Date(dateStr).getTime();
+                    const diffMins = Math.floor(diffMs / 60000);
+                    if (diffMins < 1) return 'Just now';
+                    if (diffMins < 60) return `${diffMins}m ago`;
+                    const diffHours = Math.floor(diffMins / 60);
+                    if (diffHours < 24) return `${diffHours}h ago`;
+                    const diffDays = Math.floor(diffHours / 24);
+                    return `${diffDays}d ago`;
+                  };
+
+                  return (
+                    <div
+                      key={n.id}
+                      onClick={() => {
+                        setShowNotifModal(false);
+                        if (isPending) {
+                          history.push('/approval-status');
+                        } else if (n.passCode) {
+                          history.push(`/visitor-details/${n.passCode}`);
+                        }
+                      }}
+                      style={{
+                        padding: '0.85rem 1rem',
+                        borderRadius: '12px',
+                        background: n.read ? '#ffffff' : '#fffaf5',
+                        border: `1.5px solid ${n.read ? '#f1f5f9' : '#fed7aa'}`,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                        <span style={{ background: badgeBg, color: badgeColor, fontSize: '0.68rem', fontWeight: '800', padding: '2px 8px', borderRadius: '9999px' }}>
+                          {n.status}
+                        </span>
+                        <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                          {timeAgo(n.timestamp)}
+                        </span>
+                      </div>
+                      <h4 style={{ margin: '0.2rem 0', fontSize: '0.92rem', fontWeight: '800', color: '#1c1917' }}>
+                        {n.title}
+                      </h4>
+                      <p style={{ margin: 0, fontSize: '0.78rem', color: '#57534e', lineHeight: '1.35' }}>
+                        {n.message}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </IonModal>
+
+        <IonToast isOpen={!!toastMsg} message={toastMsg} duration={3500} onDidDismiss={() => setToastMsg('')} />
+
       </IonContent>
     </IonPage>
   );

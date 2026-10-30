@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   IonPage,
   IonHeader,
@@ -29,6 +29,7 @@ export default function ApprovalStatus({ history }) {
   const [reviewItem, setReviewItem] = useState(null);
   const [reviewRemarks, setReviewRemarks] = useState('');
   const [reviewPriority, setReviewPriority] = useState('P3');
+  const knownPendingIds = useRef(new Set());
   const [reviewVisitType, setReviewVisitType] = useState('HOME');
   const [reviewVisitorName, setReviewVisitorName] = useState('');
   const [reviewVisitorPhone, setReviewVisitorPhone] = useState('');
