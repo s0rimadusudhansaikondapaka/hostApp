@@ -13,7 +13,7 @@ import {
   IonRefresherContent,
 } from '@ionic/react';
 import { useAuth } from '../context/AuthContext';
-import { getHostRegistrations, updateApproval } from '../services/api';
+import { getHostRegistrations, updateApproval, getFrontendUrl } from '../services/api';
 import { Clock, CheckCircle2, XCircle, Search, User, Calendar, Car, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function ApprovalStatus({ history }) {
@@ -23,6 +23,7 @@ export default function ApprovalStatus({ history }) {
   const [activeTab, setActiveTab] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMsg, setToastMsg] = useState('');
+  const frontendUrl = getFrontendUrl();
 
   // Review & Approval Modal State
   const [reviewItem, setReviewItem] = useState(null);
@@ -384,6 +385,34 @@ export default function ApprovalStatus({ history }) {
                       >
                         Pass &amp; QR
                       </button>
+
+                      {isRejected && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const msg = `Jay Sai Ram! Regarding your visit to Sathya Sai Grama: Your gate pass request (${r.pass_code || `#${r.id}`}) has been REJECTED by host ${user?.name || 'Ashram Host'}.\n\nReason: ${r.rejection_reason || r.remarks || 'No remarks provided'}.\n\nCheck status: ${frontendUrl}/pass/${r.pass_code}`;
+                            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+                          }}
+                          className="host-btn-outline"
+                          style={{ flex: 1.1, padding: '0.55rem 0.6rem', cursor: 'pointer', fontSize: '0.78rem', color: '#b91c1c', borderColor: '#fca5a5' }}
+                        >
+                          📱 Notify Guest
+                        </button>
+                      )}
+
+                      {isApproved && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const msg = `Jay Sai Ram! Your gate pass for Sathya Sai Grama has been CONFIRMED by host ${user?.name || 'Ashram Host'}.\n\nPass Code: ${r.pass_code}\nValid From: ${formatDate(r.valid_from)}\nValid Until: ${formatDate(r.valid_until)}\n\nDigital Pass: ${frontendUrl}/pass/${r.pass_code}`;
+                            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+                          }}
+                          className="host-btn-outline"
+                          style={{ flex: 1.1, padding: '0.55rem 0.6rem', cursor: 'pointer', fontSize: '0.78rem', color: '#15803d', borderColor: '#86efac' }}
+                        >
+                          📱 WhatsApp Pass
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
