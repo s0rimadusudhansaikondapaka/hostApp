@@ -276,55 +276,38 @@ export default function HostHome({ history }) {
           </div>
         </div>
 
-        {/* Two Action Buttons: Share Link & Pre-register (Issue #17) */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', margin: '0.85rem 0' }}>
+        {/* Quick Action: Share Link (Issue #17 / #42 - Pre-register removed) */}
+        <div style={{ margin: '0.85rem 0' }}>
           <button
             type="button"
             onClick={handleShareInvite}
             disabled={generatingToken}
             style={{
+              width: '100%',
               background: '#ffffff',
               border: '1.5px solid #fed7aa',
               borderRadius: '16px',
-              padding: '0.85rem 0.6rem',
+              padding: '0.85rem 1rem',
               display: 'flex',
-              flexDirection: 'column',
               alignItems: 'center',
-              gap: '0.35rem',
+              justifyContent: 'space-between',
               boxShadow: '0 2px 8px rgba(184, 64, 24, 0.06)',
               cursor: generatingToken ? 'wait' : 'pointer',
               transition: 'transform 0.15s ease'
             }}
           >
-            <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#fdede3', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b84018' }}>
-              <Share2 size={20} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#fdede3', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b84018' }}>
+                <Share2 size={20} />
+              </div>
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ fontSize: '0.92rem', fontWeight: '800', color: '#1c1917' }}>Share Invite Link</div>
+                <div style={{ fontSize: '0.72rem', color: '#78716c' }}>Single-use self-registration URL for guests</div>
+              </div>
             </div>
-            <span style={{ fontSize: '0.88rem', fontWeight: '800', color: '#1c1917' }}>Share Link</span>
-            <span style={{ fontSize: '0.68rem', color: '#78716c' }}>Single-use guest URL</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => history.push('/invite-visitor')}
-            style={{
-              background: '#ffffff',
-              border: '1.5px solid #fed7aa',
-              borderRadius: '16px',
-              padding: '0.85rem 0.6rem',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '0.35rem',
-              boxShadow: '0 2px 8px rgba(184, 64, 24, 0.06)',
-              cursor: 'pointer',
-              transition: 'transform 0.15s ease'
-            }}
-          >
-            <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b45309' }}>
-              <UserPlus size={20} />
-            </div>
-            <span style={{ fontSize: '0.88rem', fontWeight: '800', color: '#1c1917' }}>Pre-register</span>
-            <span style={{ fontSize: '0.68rem', color: '#78716c' }}>Fill guest pass form</span>
+            <span style={{ fontSize: '0.78rem', fontWeight: 'bold', color: '#b84018', background: '#fdede3', padding: '0.3rem 0.7rem', borderRadius: '9999px' }}>
+              {generatingToken ? 'Generating...' : 'Share ➔'}
+            </span>
           </button>
         </div>
 
