@@ -285,6 +285,7 @@ export default function InviteVisitor({ history }) {
       boys_count: computedBoys,
       girls_count: computedGirls,
       children_count: computedBoys + computedGirls,
+      person_count: isSingle ? 1 : (computedMen + computedWomen + computedBoys + computedGirls),
       vehicles: validVehicles,
       is_spot_registration: false,
     };
