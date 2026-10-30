@@ -13,7 +13,7 @@ import {
 } from '@ionic/react';
 import { useParams } from 'react-router-dom';
 import { getHostRegistrations, getPublicPassDetails, updateApproval, getBaseUrl, getFrontendUrl } from '../services/api';
-import { Share2, Ban, CheckCircle, Car, Users, Calendar, ShieldCheck, MapPin, ZoomIn, ZoomOut, Maximize2, Download, Copy, Check } from 'lucide-react';
+import { Share2, Ban, CheckCircle, Car, Users, Calendar, ShieldCheck, MapPin, ZoomIn, ZoomOut, Maximize2, Download, Copy, Check, Printer } from 'lucide-react';
 import QRCode from 'qrcode';
 
 export default function VisitorDetails({ match, history }) {
@@ -100,6 +100,79 @@ export default function VisitorDetails({ match, history }) {
     } catch (err) {
       setToastMsg('Failed to cancel visit.');
     }
+  };
+
+
+  const handleDownloadPng = (qrUrl, passCode) => {
+    if (!qrUrl) return;
+    const link = document.createElement('a');
+    link.href = qrUrl;
+    link.download = `${passCode || 'GatePass'}_QR.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownloadPdf = (pass, qrUrl) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Gate Pass - ${pass?.pass_code || 'Ashram Pass'}</title>
+          <style>
+            @page { size: A4 portrait; margin: 15mm; }
+            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #1c1917; background: #fff; }
+            .pass-container { max-width: 500px; margin: 0 auto; border: 2.5px solid #b84018; border-radius: 16px; padding: 24px; text-align: center; }
+            .header { border-bottom: 2px solid #b84018; padding-bottom: 12px; margin-bottom: 16px; }
+            .title { font-size: 22px; font-weight: bold; color: #4e081d; margin: 0; }
+            .subtitle { font-size: 13px; color: #b84018; font-weight: bold; margin-top: 4px; }
+            .qr-img { width: 220px; height: 220px; margin: 16px auto; display: block; border: 1.5px solid #e2e8f0; border-radius: 12px; }
+            .code-badge { display: inline-block; background: #fef3c7; color: #92400e; border: 1.5px solid #fde68a; font-size: 24px; font-weight: 800; padding: 6px 18px; border-radius: 8px; margin: 8px 0; letter-spacing: 1px; }
+            .meta-table { width: 100%; text-align: left; margin-top: 16px; border-collapse: collapse; font-size: 13px; }
+            .meta-table td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; }
+            .meta-label { color: #64748b; font-weight: 600; width: 45%; }
+            .meta-val { color: #0f172a; font-weight: 700; }
+            .footer { margin-top: 20px; font-size: 11px; color: #94a3b8; border-top: 1px dashed #cbd5e1; padding-top: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="pass-container">
+            <div class="header">
+              <h1 class="title">Sathya Sai Grama, Muddenahalli</h1>
+              <div class="subtitle">Official Visitor Gate Entry Pass</div>
+            </div>
+            <div class="code-badge">${pass?.pass_code || 'GATE-PASS'}</div>
+            <img class="qr-img" src="${qrUrl || pass?.qr_code_url || ''}" alt="Gate Pass QR" />
+            <h2 style="margin: 4px 0; font-size: 18px;">${pass?.visitor_name || 'Visitor'}</h2>
+            <div style="font-size: 13px; color: #64748b; margin-bottom: 12px;">${pass?.visitor_phone || ''}</div>
+            <table class="meta-table">
+              <tr><td class="meta-label">Pass Category</td><td class="meta-val">${pass?.visitor_category || 'GENERAL'}</td></tr>
+              <tr><td class="meta-label">Designated Host</td><td class="meta-val">${pass?.host_name || 'Ashram Host'}</td></tr>
+              <tr><td class="meta-label">Scheduled Arrival (SAT)</td><td class="meta-val">${formatDate(pass?.valid_from)}</td></tr>
+              <tr><td class="meta-label">Scheduled Departure (SDT)</td><td class="meta-val">${formatDate(pass?.valid_until)}</td></tr>
+              <tr><td class="meta-label">Total People Count</td><td class="meta-val">${pass?.person_count || 1} Person(s)</td></tr>
+              <tr><td class="meta-label">Pass Status</td><td class="meta-val">${pass?.status || 'APPROVED'}</td></tr>
+            </table>
+            <div class="footer">
+              Present this pass or digital QR at Ashram Security Gates upon arrival.<br/>
+              Visiting Hours: 05:00 AM – 10:00 PM IST
+            </div>
+          </div>
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+              }, 400);
+            };
+          </script>
+        </body>
+      </html>
+    `;
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
   };
 
   const formatDate = (dateStr) => {
@@ -272,6 +345,23 @@ export default function VisitorDetails({ match, history }) {
                 📲 Share Pass on WhatsApp
               </button>
 
+              <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+                <button
+                  type="button"
+                  onClick={() => handleDownloadPng(qrDataUrl, visitor?.pass_code)}
+                  style={{ flex: 1, padding: '0.75rem', fontSize: '0.82rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', borderRadius: '9999px', border: '1.5px solid #d1d5db', background: '#ffffff', cursor: 'pointer' }}
+                >
+                  <Download size={15} /> Download PNG
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDownloadPdf(visitor, qrDataUrl)}
+                  style={{ flex: 1, padding: '0.75rem', fontSize: '0.82rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', borderRadius: '9999px', border: '1.5px solid #d1d5db', background: '#ffffff', cursor: 'pointer' }}
+                >
+                  <Printer size={15} /> Print / PDF
+                </button>
+              </div>
+
               <button
                 type="button"
                 onClick={() => setShowAlert(true)}
@@ -424,6 +514,25 @@ export default function VisitorDetails({ match, history }) {
               >
                 <Share2 size={16} /> Share via WhatsApp
               </button>
+
+              <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+                <button
+                  type="button"
+                  className="host-btn-outline"
+                  onClick={() => handleDownloadPng(qrDataUrl, visitor?.pass_code)}
+                  style={{ flex: 1, padding: '0.65rem', fontSize: '0.8rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
+                >
+                  <Download size={14} /> PNG
+                </button>
+                <button
+                  type="button"
+                  className="host-btn-outline"
+                  onClick={() => handleDownloadPdf(visitor, qrDataUrl)}
+                  style={{ flex: 1, padding: '0.65rem', fontSize: '0.8rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
+                >
+                  <Printer size={14} /> PDF
+                </button>
+              </div>
 
               <button
                 type="button"

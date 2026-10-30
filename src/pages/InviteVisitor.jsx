@@ -12,7 +12,8 @@ import {
 } from '@ionic/react';
 import { useAuth } from '../context/AuthContext';
 import { createRegistration, generateInviteToken, getFrontendUrl } from '../services/api';
-import { Share2, Plus, Trash2, CheckCircle, Calendar, Users, Car, AlertCircle } from 'lucide-react';
+import { Share2, Plus, Trash2, CheckCircle, Calendar, Users, Car, AlertCircle, Download, Printer } from 'lucide-react';
+import QRCode from 'qrcode';
 
 const VEHICLE_TYPES = [
   'Select',
@@ -183,6 +184,80 @@ export default function InviteVisitor({ history }) {
   const [remarks, setRemarks] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
+  const [createdPassModal, setCreatedPassModal] = useState(null);
+  const [createdPassQrUrl, setCreatedPassQrUrl] = useState('');
+
+  const handleDownloadPng = (qrUrl, passCode) => {
+    if (!qrUrl) return;
+    const link = document.createElement('a');
+    link.href = qrUrl;
+    link.download = `${passCode || 'GatePass'}_QR.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownloadPdf = (pass, qrUrl) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Gate Pass - ${pass?.pass_code || 'Ashram Pass'}</title>
+          <style>
+            @page { size: A4 portrait; margin: 15mm; }
+            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #1c1917; background: #fff; }
+            .pass-container { max-width: 500px; margin: 0 auto; border: 2.5px solid #b84018; border-radius: 16px; padding: 24px; text-align: center; }
+            .header { border-bottom: 2px solid #b84018; padding-bottom: 12px; margin-bottom: 16px; }
+            .title { font-size: 22px; font-weight: bold; color: #4e081d; margin: 0; }
+            .subtitle { font-size: 13px; color: #b84018; font-weight: bold; margin-top: 4px; }
+            .qr-img { width: 220px; height: 220px; margin: 16px auto; display: block; border: 1.5px solid #e2e8f0; border-radius: 12px; }
+            .code-badge { display: inline-block; background: #fef3c7; color: #92400e; border: 1.5px solid #fde68a; font-size: 24px; font-weight: 800; padding: 6px 18px; border-radius: 8px; margin: 8px 0; letter-spacing: 1px; }
+            .meta-table { width: 100%; text-align: left; margin-top: 16px; border-collapse: collapse; font-size: 13px; }
+            .meta-table td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; }
+            .meta-label { color: #64748b; font-weight: 600; width: 45%; }
+            .meta-val { color: #0f172a; font-weight: 700; }
+            .footer { margin-top: 20px; font-size: 11px; color: #94a3b8; border-top: 1px dashed #cbd5e1; padding-top: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="pass-container">
+            <div class="header">
+              <h1 class="title">Sathya Sai Grama, Muddenahalli</h1>
+              <div class="subtitle">Official Visitor Gate Entry Pass</div>
+            </div>
+            <div class="code-badge">${pass?.pass_code || 'GATE-PASS'}</div>
+            <img class="qr-img" src="${qrUrl || pass?.qr_code_url || ''}" alt="Gate Pass QR" />
+            <h2 style="margin: 4px 0; font-size: 18px;">${pass?.visitor_name || 'Visitor'}</h2>
+            <div style="font-size: 13px; color: #64748b; margin-bottom: 12px;">${pass?.visitor_phone || ''}</div>
+            <table class="meta-table">
+              <tr><td class="meta-label">Pass Category</td><td class="meta-val">${pass?.visitor_category || 'GENERAL'}</td></tr>
+              <tr><td class="meta-label">Designated Host</td><td class="meta-val">${user?.name || 'Ashram Host'}</td></tr>
+              <tr><td class="meta-label">Scheduled Arrival (SAT)</td><td class="meta-val">${new Date(pass?.valid_from).toLocaleString()}</td></tr>
+              <tr><td class="meta-label">Scheduled Departure (SDT)</td><td class="meta-val">${new Date(pass?.valid_until).toLocaleString()}</td></tr>
+              <tr><td class="meta-label">Total People Count</td><td class="meta-val">${pass?.person_count || 1} Person(s)</td></tr>
+              <tr><td class="meta-label">Pass Status</td><td class="meta-val">${pass?.status || 'APPROVED'}</td></tr>
+            </table>
+            <div class="footer">
+              Present this pass or digital QR at Ashram Security Gates upon arrival.<br/>
+              Visiting Hours: 05:00 AM – 10:00 PM IST
+            </div>
+          </div>
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+              }, 400);
+            };
+          </script>
+        </body>
+      </html>
+    `;
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+  };
   const [error, setError] = useState('');
 
   // Share Link Modal state
@@ -329,7 +404,36 @@ export default function InviteVisitor({ history }) {
       const res = await createRegistration(payload);
       if (res?.success) {
         setToastMsg('Visitor invite submitted successfully!');
-        setTimeout(() => history.push('/approval-status'), 1200);
+        const reg = res.registration || {};
+        reg.visitor_name = fullName;
+        reg.visitor_phone = phone;
+        reg.visitor_category = visitorCategory;
+        reg.valid_from = validFrom;
+        reg.valid_until = validUntil;
+        reg.person_count = isSingle ? 1 : (computedMen + computedWomen + computedBoys + computedGirls);
+
+        let qrUrl = reg.qr_code_url;
+        if (!qrUrl) {
+          try {
+            const qrPayload = JSON.stringify({
+              passCode: reg.pass_code,
+              refId: reg.id,
+              regId: reg.id,
+              visitorName: fullName,
+              phone: phone,
+              category: visitorCategory,
+              hostName: user?.name || 'Ashram Host',
+              validFrom: validFrom,
+              validUntil: validUntil,
+              personCount: reg.person_count,
+              status: reg.status || 'APPROVED',
+              isVvip: !!isVvip
+            });
+            qrUrl = await QRCode.toDataURL(qrPayload, { width: 500, margin: 2 });
+          } catch (e) {}
+        }
+        setCreatedPassQrUrl(qrUrl);
+        setCreatedPassModal(reg);
       } else {
         setError(res?.message || 'Failed to submit visitor invite.');
       }
@@ -854,6 +958,113 @@ export default function InviteVisitor({ history }) {
         </IonModal>
 
         <IonToast isOpen={!!toastMsg} message={toastMsg} duration={2500} onDidDismiss={() => setToastMsg('')} />
+      
+        {/* Issue #53 & #56: Post-Submission QR Code Modal */}
+        <IonModal isOpen={!!createdPassModal} onDidDismiss={() => { setCreatedPassModal(null); history.push('/approval-status'); }}>
+          <div style={{ padding: '1.5rem', background: '#ffffff', height: '100%', overflowY: 'auto', textAlign: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1.5px solid #f0e6da', paddingBottom: '0.6rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <CheckCircle size={20} color="#15803d" />
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: '#1c1917' }}>Visitor Pass Generated</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setCreatedPassModal(null); history.push('/approval-status'); }}
+                style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: '#78716c' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ background: '#fffaf5', border: '2px solid #b84018', borderRadius: '16px', padding: '1.2rem', margin: '0.8rem 0' }}>
+              <div style={{ display: 'inline-block', background: '#fef3c7', color: '#92400e', border: '1.5px solid #fde68a', padding: '0.3rem 0.9rem', borderRadius: '9999px', fontSize: '0.95rem', fontWeight: '800', letterSpacing: '0.05em', marginBottom: '0.8rem' }}>
+                {createdPassModal?.pass_code || 'PASS'}
+              </div>
+
+              {createdPassQrUrl && (
+                <div style={{ background: '#ffffff', padding: '0.6rem', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'inline-block', margin: '0 auto 0.8rem auto' }}>
+                  <img src={createdPassQrUrl} alt="QR Code" style={{ width: '180px', height: '180px', display: 'block', margin: '0 auto' }} />
+                </div>
+              )}
+
+              <h3 style={{ margin: '0.2rem 0', fontSize: '1.2rem', fontWeight: '800', color: '#1c1917' }}>
+                {createdPassModal?.visitor_name}
+              </h3>
+              <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.82rem', color: '#78716c' }}>
+                Phone: <strong>{createdPassModal?.visitor_phone}</strong> • Total Guests: <strong>{createdPassModal?.person_count || 1}</strong>
+              </p>
+              <div style={{ fontSize: '0.76rem', color: '#57534e', borderTop: '1px solid #f5eee6', paddingTop: '0.5rem', textAlign: 'left' }}>
+                <div><strong>Arrival:</strong> {new Date(createdPassModal?.valid_from).toLocaleString()}</div>
+                <div><strong>Departure:</strong> {new Date(createdPassModal?.valid_until).toLocaleString()}</div>
+              </div>
+            </div>
+
+            {/* Sharing & Download Options (Issue #53 & #56) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: '1rem' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  const passUrl = `${getFrontendUrl()}/pass/${createdPassModal?.pass_code}`;
+                  const msg = `Jay Sai Ram! Here is your official Gate Pass for Sathya Sai Grama:
+
+Guest: ${createdPassModal?.visitor_name}
+Pass Code: ${createdPassModal?.pass_code}
+Category: ${createdPassModal?.visitor_category || 'General'}
+
+Digital Pass Link: ${passUrl}
+
+Please present this QR code at Ashram Security Gate upon arrival.`;
+                  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+                }}
+                className="host-btn-primary"
+                style={{ width: '100%', padding: '0.75rem', background: '#15803d', borderColor: '#15803d', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontWeight: 'bold' }}
+              >
+                📱 Share via WhatsApp
+              </button>
+
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => handleDownloadPng(createdPassQrUrl, createdPassModal?.pass_code)}
+                  className="host-btn-outline"
+                  style={{ flex: 1, padding: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', fontWeight: '700', fontSize: '0.82rem' }}
+                >
+                  <Download size={15} /> Download PNG
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleDownloadPdf(createdPassModal, createdPassQrUrl)}
+                  className="host-btn-outline"
+                  style={{ flex: 1, padding: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', fontWeight: '700', fontSize: '0.82rem' }}
+                >
+                  <Printer size={15} /> Download PDF
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(`${getFrontendUrl()}/pass/${createdPassModal?.pass_code}`);
+                  setToastMsg('Gate pass link copied to clipboard!');
+                }}
+                className="host-btn-secondary"
+                style={{ width: '100%', padding: '0.65rem', fontWeight: '600', fontSize: '0.82rem' }}
+              >
+                🔗 Copy Pass Link
+              </button>
+
+              <button
+                type="button"
+                onClick={() => { setCreatedPassModal(null); history.push('/approval-status'); }}
+                style={{ width: '100%', padding: '0.7rem', marginTop: '0.5rem', background: '#b84018', color: '#ffffff', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '0.88rem', cursor: 'pointer' }}
+              >
+                Done / View Approvals
+              </button>
+            </div>
+          </div>
+        </IonModal>
+
       </IonContent>
     </IonPage>
   );
