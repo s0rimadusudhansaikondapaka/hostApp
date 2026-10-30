@@ -117,36 +117,60 @@ export default function InviteVisitor({ history }) {
   const [validUntil, setValidUntil] = useState(getDefaultUntil());
 
   const handleArrivalChange = (val) => {
-    setValidFrom(val);
-    if (!val) return;
-    const fromD = new Date(val);
-    const dateStr = val.split('T')[0];
+    if (!val) {
+      setValidFrom('');
+      return;
+    }
+    const [datePart, timePart] = val.split('T');
+    let [h, m] = (timePart || '05:00').split(':').map(Number);
 
-    // Compute automatic same-day departure
-    let depD = new Date(fromD.getTime() + 4 * 60 * 60 * 1000);
-    const maxD = new Date(`${dateStr}T22:00:00`);
-    if (depD > maxD) depD = maxD;
-    if (depD <= fromD) depD = new Date(fromD.getTime() + 30 * 60 * 1000);
-
+    // Block/clamp hours before 5am (00..04) and after 10pm (23) - Issue #47
+    if (h < 5) {
+      h = 5; m = 0;
+      setToastMsg('Timings before 5:00 AM are restricted. Visiting hours: 5:00 AM – 10:00 PM.');
+    } else if (h > 22 || (h === 22 && m > 0)) {
+      h = 22; m = 0;
+      setToastMsg('Timings after 10:00 PM are restricted. Visiting hours: 5:00 AM – 10:00 PM.');
+    }
     const pad = (n) => String(n).padStart(2, '0');
-    const computedDep = `${dateStr}T${pad(depD.getHours())}:${pad(depD.getMinutes())}`;
-    setValidUntil(computedDep);
+    const clampedSAT = `${datePart}T${pad(h)}:${pad(m)}`;
+    setValidFrom(clampedSAT);
+
+    // Enforce 05:00 <= SAT <= SDT <= 22:00 - Issue #48
+    if (!validUntil || validUntil.split('T')[0] !== datePart || new Date(validUntil) <= new Date(clampedSAT)) {
+      let depD = new Date(new Date(clampedSAT).getTime() + 4 * 60 * 60 * 1000);
+      const maxD = new Date(`${datePart}T22:00:00`);
+      if (depD > maxD) depD = maxD;
+      setValidUntil(`${datePart}T${pad(depD.getHours())}:${pad(depD.getMinutes())}`);
+    }
   };
 
   const handleDepartureChange = (val) => {
-    setValidUntil(val);
-    if (!val) return;
-    const depD = new Date(val);
-    const fromD = new Date(validFrom);
-    const dateStr = val.split('T')[0];
+    if (!val) {
+      setValidUntil('');
+      return;
+    }
+    const [datePart, timePart] = val.split('T');
+    let [h, m] = (timePart || '22:00').split(':').map(Number);
 
-    // If arrival is greater than departure or empty, adjust arrival to earlier on same day
-    if (!validFrom || fromD >= depD || validFrom.split('T')[0] !== dateStr) {
-      let arrD = new Date(depD.getTime() - 2 * 60 * 60 * 1000);
-      const minD = new Date(`${dateStr}T05:00:00`);
+    // Block/clamp hours before 5am and after 10pm - Issue #47
+    if (h < 5) {
+      h = 5; m = 30;
+      setToastMsg('Timings before 5:00 AM are restricted. Visiting hours: 5:00 AM – 10:00 PM.');
+    } else if (h > 22 || (h === 22 && m > 0)) {
+      h = 22; m = 0;
+      setToastMsg('Timings after 10:00 PM are restricted. Visiting hours: 5:00 AM – 10:00 PM.');
+    }
+    const pad = (n) => String(n).padStart(2, '0');
+    const clampedSDT = `${datePart}T${pad(h)}:${pad(m)}`;
+    setValidUntil(clampedSDT);
+
+    // SAT must be before SDT - Issue #48
+    if (!validFrom || validFrom.split('T')[0] !== datePart || new Date(validFrom) >= new Date(clampedSDT)) {
+      let arrD = new Date(new Date(clampedSDT).getTime() - 2 * 60 * 60 * 1000);
+      const minD = new Date(`${datePart}T05:00:00`);
       if (arrD < minD) arrD = minD;
-      const pad = (n) => String(n).padStart(2, '0');
-      setValidFrom(`${dateStr}T${pad(arrD.getHours())}:${pad(arrD.getMinutes())}`);
+      setValidFrom(`${datePart}T${pad(arrD.getHours())}:${pad(arrD.getMinutes())}`);
     }
   };
 
@@ -495,6 +519,7 @@ export default function InviteVisitor({ history }) {
                   type="datetime-local"
                   required
                   min={getMinDateTime()}
+                  max={validUntil ? validUntil : (validFrom ? `${validFrom.split('T')[0]}T22:00` : undefined)}
                   className="host-input"
                   value={validFrom}
                   onChange={(e) => handleArrivalChange(e.target.value)}
