@@ -53,6 +53,16 @@ export default function InviteVisitor({ history }) {
 
   // Visit Window Dates (Operating window: 5:00 AM - 10:00 PM; Strictly single-day for Phase 1)
   const getDefaultFrom = () => {
+        if (!/^[a-zA-Z\s.-]{3,50}$/.test(fullName.trim())) {
+      setError('Visitor Name must contain only alphabets and spaces (3 to 50 characters, no numbers or special characters).');
+      return;
+    }
+    const cleanDigits = phone.replace(/[^0-9]/g, '');
+    if (cleanDigits.length < 10 || cleanDigits.length > 15 || !/^\+?[0-9]{10,15}$/.test(phone.trim())) {
+      setError('Mobile number must contain only numbers and optional + prefix (10 to 15 digits).');
+      return;
+    }
+
     const now = new Date();
     if (now.getHours() < 5) {
       now.setHours(5, 0, 0, 0);
@@ -380,7 +390,10 @@ export default function InviteVisitor({ history }) {
               className="host-input"
               placeholder="Enter full name (3 to 50 characters)"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={(e) => {
+                const filtered = e.target.value.replace(/[^a-zA-Z\s.-]/g, '');
+                setFullName(filtered);
+              }}
             />
             <div style={{ fontSize: '0.72rem', color: fullName.trim().length >= 3 && fullName.trim().length <= 50 ? '#15803d' : '#78716c', marginTop: '3px', fontWeight: '600' }}>
               Characters: {fullName.trim().length} / 50 (min 3)
@@ -396,7 +409,13 @@ export default function InviteVisitor({ history }) {
                   className="host-input"
                   placeholder="e.g. 9876543210 (10 to 15 digits)"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    let filtered = e.target.value.replace(/[^0-9+]/g, '');
+                    if (filtered.indexOf('+') > 0) {
+                      filtered = filtered[0] === '+' ? '+' + filtered.slice(1).replace(/\+/g, '') : filtered.replace(/\+/g, '');
+                    }
+                    setPhone(filtered);
+                  }}
                 />
                 <div style={{ fontSize: '0.72rem', color: phone.replace(/\D/g, '').length >= 10 && phone.replace(/\D/g, '').length <= 15 ? '#15803d' : '#b45309', marginTop: '3px', fontWeight: '600' }}>
                   Digits: {phone.replace(/\D/g, '').length} / 15 (min 10)
