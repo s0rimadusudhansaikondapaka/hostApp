@@ -407,7 +407,7 @@ export default function InviteVisitor({ history }) {
         const reg = res.registration || {};
         reg.visitor_name = fullName;
         reg.visitor_phone = phone;
-        reg.visitor_category = visitorCategory;
+        reg.visitor_category = category;
         reg.valid_from = validFrom;
         reg.valid_until = validUntil;
         reg.person_count = isSingle ? 1 : (computedMen + computedWomen + computedBoys + computedGirls);
@@ -421,13 +421,13 @@ export default function InviteVisitor({ history }) {
               regId: reg.id,
               visitorName: fullName,
               phone: phone,
-              category: visitorCategory,
+              category: category,
               hostName: user?.name || 'Ashram Host',
               validFrom: validFrom,
               validUntil: validUntil,
               personCount: reg.person_count,
               status: reg.status || 'APPROVED',
-              isVvip: !!isVvip
+              isVvip: category === 'VIP' || !!isVipHost
             });
             qrUrl = await QRCode.toDataURL(qrPayload, { width: 500, margin: 2 });
           } catch (e) {}

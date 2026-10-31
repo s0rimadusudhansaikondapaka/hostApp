@@ -11,11 +11,14 @@ import {
   IonRefresher,
   IonRefresherContent,
   IonModal,
+  IonToast,
 } from '@ionic/react';
 import { personCircleOutline } from 'ionicons/icons';
 import { useAuth, getHostPassCode } from '../context/AuthContext';
 import { getHostRegistrations, getFrontendUrl, generateInviteToken } from '../services/api';
-import { 
+import {
+  Bell,
+  BellOff,
   UserPlus, 
   Clock, 
   Users, 
@@ -335,7 +338,35 @@ export default function HostHome({ history }) {
               <span style={{ fontSize: '0.72rem', color: '#78716c', fontWeight: '600' }}>Sathya Sai Grama</span>
             </div>
           </div>
-          <IonButtons slot="end">
+          <IonButtons slot="end" style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+            <div 
+              onClick={() => { setShowNotifModal(true); markAllNotificationsAsRead(); }}
+              style={{ position: 'relative', cursor: 'pointer', padding: '0.4rem', display: 'flex', alignItems: 'center' }}
+              title="Notifications"
+            >
+              <Bell size={22} color="#b84018" />
+              {unreadNotifCount > 0 && (
+                <span style={{
+                  position: 'absolute',
+                  top: '2px',
+                  right: '2px',
+                  background: '#dc2626',
+                  color: '#ffffff',
+                  fontSize: '0.62rem',
+                  fontWeight: '800',
+                  borderRadius: '9999px',
+                  minWidth: '16px',
+                  height: '16px',
+                  padding: '0 4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1.5px solid #ffffff'
+                }}>
+                  {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
+                </span>
+              )}
+            </div>
             <IonButton onClick={() => history.push('/profile')} style={{ color: '#b84018' }}>
               <IonIcon icon={personCircleOutline} style={{ fontSize: '28px' }} />
             </IonButton>
