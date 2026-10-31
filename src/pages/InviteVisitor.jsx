@@ -549,32 +549,6 @@ export default function InviteVisitor({ history }) {
               </div>
             </div>
 
-            {!isVipHost && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', marginTop: '0.4rem' }}>
-                <div>
-                  <label className="host-label">Visitor Category</label>
-                  <select className="host-input" value={category} onChange={(e) => setCategory(e.target.value)}>
-                    <option value="GENERAL">General Guest</option>
-                    <option value="VIP">VIP Guest</option>
-                    <option value="FAMILY_MEMBER">Family Member</option>
-                    <option value="FREQUENT_VISITOR">Frequent Visitor</option>
-                    <option value="DELIVERY">Delivery / Courier</option>
-                    <option value="VENDOR">Vendor / Contractor</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="host-label">Visit Type</label>
-                  <select className="host-input" value={visitType} onChange={(e) => setVisitType(e.target.value)}>
-                    <option value="HOME">Resident / Home Visit</option>
-                    <option value="OFFICE">Department / Office Visit</option>
-                    <option value="BHAJAN">Ashram Bhajan Visit</option>
-                    <option value="EVENT">Ashram Event Visit</option>
-                    <option value="TOUR">Ashram Tour Visit</option>
-                  </select>
-                </div>
-              </div>
-            )}
-
             <div style={{ marginTop: '0.4rem' }}>
               <label className="host-label">Email (Optional)</label>
               <input
@@ -585,19 +559,6 @@ export default function InviteVisitor({ history }) {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-
-            {!isVipHost && (
-              <>
-                <label className="host-label" style={{ marginTop: '0.4rem' }}>Purpose of Visit</label>
-                <input
-                  type="text"
-                  className="host-input"
-                  placeholder="e.g. Darshan, Meeting, Delivery"
-                  value={purpose}
-                  onChange={(e) => setPurpose(e.target.value)}
-                />
-              </>
-            )}
           </div>
 
           {/* Section 2: Visit Date & Time Window */}
