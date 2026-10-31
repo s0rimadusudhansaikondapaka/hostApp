@@ -54,16 +54,6 @@ export default function InviteVisitor({ history }) {
 
   // Visit Window Dates (Operating window: 5:00 AM - 10:00 PM; Strictly single-day for Phase 1)
   const getDefaultFrom = () => {
-        if (!/^[a-zA-Z\s.-]{3,50}$/.test(fullName.trim())) {
-      setError('Visitor Name must contain only alphabets and spaces (3 to 50 characters, no numbers or special characters).');
-      return;
-    }
-    const cleanDigits = phone.replace(/[^0-9]/g, '');
-    if (cleanDigits.length < 10 || cleanDigits.length > 15 || !/^\+?[0-9]{10,15}$/.test(phone.trim())) {
-      setError('Mobile number must contain only numbers and optional + prefix (10 to 15 digits).');
-      return;
-    }
-
     const now = new Date();
     if (now.getHours() < 5) {
       now.setHours(5, 0, 0, 0);
