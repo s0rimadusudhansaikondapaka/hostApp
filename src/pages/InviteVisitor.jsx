@@ -436,18 +436,15 @@ export default function InviteVisitor({ history }) {
   };
 
   const handleShareInvite = async () => {
+    setShareToken('');
     setGeneratingToken(true);
     try {
       const res = await generateInviteToken();
       if (res?.token) {
         setShareToken(res.token);
-      } else {
-        const fallback = `inv_${Math.random().toString(36).substring(2, 11)}_${Date.now()}`;
-        setShareToken(fallback);
       }
     } catch (err) {
-      const fallback = `inv_${Math.random().toString(36).substring(2, 11)}_${Date.now()}`;
-      setShareToken(fallback);
+      console.error('Failed to generate invite token:', err);
     } finally {
       setGeneratingToken(false);
       setShowShareModal(true);
@@ -455,8 +452,7 @@ export default function InviteVisitor({ history }) {
   };
 
   const frontendUrl = getFrontendUrl();
-  const activeInviteToken = shareToken || `inv_${user?.id || 1}_${Date.now()}`;
-  const inviteLink = `${frontendUrl}/?invite=true&token=${activeInviteToken}`;
+  const inviteLink = shareToken ? `${frontendUrl}/?invite=true&token=${shareToken}` : '';
 
   return (
     <IonPage>
@@ -798,7 +794,7 @@ export default function InviteVisitor({ history }) {
         </form>
 
         {/* WhatsApp / Email Invite Link Modal matching Attachment 3 */}
-        <IonModal isOpen={showShareModal} onDidDismiss={() => setShowShareModal(false)}>
+        <IonModal isOpen={showShareModal} onDidDismiss={() => { setShowShareModal(false); setShareToken(''); }}>
           <div style={{ padding: '1.5rem', background: '#ffffff', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
             {/* Modal Header */}
             <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem', borderBottom: '1.5px solid #f0e6da', paddingBottom: '0.6rem' }}>
@@ -808,7 +804,7 @@ export default function InviteVisitor({ history }) {
               </div>
               <button
                 type="button"
-                onClick={() => setShowShareModal(false)}
+                onClick={() => { setShowShareModal(false); setShareToken(''); }}
                 style={{ background: '#f5eee6', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#57534e', fontWeight: 'bold' }}
               >
                 ✕

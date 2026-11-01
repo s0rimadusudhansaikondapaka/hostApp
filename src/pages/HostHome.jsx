@@ -70,18 +70,15 @@ export default function HostHome({ history }) {
   const [copiedLink, setCopiedLink] = useState(false);
 
   const handleShareInvite = async () => {
+    setShareToken('');
     setGeneratingToken(true);
     try {
       const res = await generateInviteToken();
       if (res?.token) {
         setShareToken(res.token);
-      } else {
-        const fallback = 'inv_' + Date.now();
-        setShareToken(fallback);
       }
     } catch (err) {
-      const fallback = 'inv_' + Date.now();
-      setShareToken(fallback);
+      console.error('Failed to generate invite token:', err);
     } finally {
       setGeneratingToken(false);
       setShowShareModal(true);
@@ -89,8 +86,7 @@ export default function HostHome({ history }) {
   };
 
   const frontendUrl = getFrontendUrl();
-  const activeInviteToken = shareToken || ('inv_' + (user?.id || 1) + '_' + Date.now());
-  const inviteLink = `${frontendUrl}/?invite=true&token=${activeInviteToken}`;
+  const inviteLink = shareToken ? `${frontendUrl}/?invite=true&token=${shareToken}` : '';
   
   const [activeFilter, setActiveFilter] = useState('ALL'); // 'ALL', 'PENDING', 'INSIDE', 'INVITED', 'ARCHIVAL'
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -840,7 +836,7 @@ export default function HostHome({ history }) {
         </IonModal>
 
         {/* Share Link Modal on Home Screen (Issue #17) */}
-        <IonModal isOpen={showShareModal} onDidDismiss={() => setShowShareModal(false)}>
+        <IonModal isOpen={showShareModal} onDidDismiss={() => { setShowShareModal(false); setShareToken(''); }}>
           <div style={{ padding: '1.5rem', background: '#ffffff', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem', borderBottom: '1.5px solid #f0e6da', paddingBottom: '0.8rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -849,7 +845,7 @@ export default function HostHome({ history }) {
               </div>
               <button 
                 type="button" 
-                onClick={() => setShowShareModal(false)}
+                onClick={() => { setShowShareModal(false); setShareToken(''); }}
                 style={{ background: '#f5eee6', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontWeight: 'bold' }}
               >
                 ✕
@@ -860,15 +856,17 @@ export default function HostHome({ history }) {
               Send this single-use link to your guest. They will fill in their personal details and a digital pass will be issued upon your confirmation.
             </p>
 
-            <div style={{ background: '#faf6f0', border: '1.5px solid #ebdccc', borderRadius: '14px', padding: '0.9rem', marginBottom: '1rem', wordBreak: 'break-all', fontSize: '0.78rem', color: '#78716c' }}>
-              {inviteLink}
+            <div style={{ background: '#faf6f0', border: '1.5px solid #ebdccc', borderRadius: '14px', padding: '0.9rem', marginBottom: '1rem', wordBreak: 'break-all', fontSize: '0.78rem', color: generatingToken || !shareToken ? '#b84018' : '#78716c', fontStyle: generatingToken || !shareToken ? 'italic' : 'normal' }}>
+              {generatingToken ? 'Generating fresh single-use link...' : (inviteLink || 'Failed to generate token. Please close and try again.')}
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: 'auto' }}>
               <button
                 type="button"
                 className="host-btn-primary"
+                disabled={generatingToken || !shareToken}
                 onClick={() => {
+                  if (!inviteLink) return;
                   const msg = `Jay Sai Ram! You are invited to Sathya Sai Grama by ${user?.name || 'Ashram Host'}. Please complete your visitor pass pre-registration here: ${inviteLink}`;
                   if (navigator.share) {
                     navigator.share({ title: 'Ashram Visitor Invite', text: msg, url: inviteLink }).catch(() => {});
@@ -876,19 +874,21 @@ export default function HostHome({ history }) {
                     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
                   }
                 }}
-                style={{ padding: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontWeight: 'bold' }}
+                style={{ padding: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontWeight: 'bold', opacity: generatingToken || !shareToken ? 0.6 : 1 }}
               >
                 <Share2 size={16} /> Share via WhatsApp
               </button>
 
               <button
                 type="button"
+                disabled={generatingToken || !shareToken}
                 onClick={() => {
+                  if (!inviteLink) return;
                   navigator.clipboard?.writeText(inviteLink);
                   setCopiedLink(true);
                   setTimeout(() => setCopiedLink(false), 2000);
                 }}
-                style={{ background: '#faf6f0', border: '1px solid #ebdccc', borderRadius: '12px', padding: '0.8rem', color: '#57534e', fontWeight: 'bold', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer' }}
+                style={{ background: '#faf6f0', border: '1px solid #ebdccc', borderRadius: '12px', padding: '0.8rem', color: '#57534e', fontWeight: 'bold', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: generatingToken || !shareToken ? 'not-allowed' : 'pointer', opacity: generatingToken || !shareToken ? 0.6 : 1 }}
               >
                 {copiedLink ? <Check size={16} color="#15803d" /> : <Copy size={16} />}
                 {copiedLink ? 'Copied to Clipboard!' : 'Copy Link'}
