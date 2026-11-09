@@ -16,6 +16,20 @@ import { getVisitHistory, getHostRegistrations, createRegistration } from '../se
 import { useAuth } from '../context/AuthContext';
 import { History, Calendar, CheckCircle2, RotateCcw, Users, Car, AlertCircle, X, Check } from 'lucide-react';
 
+const RE_VEHICLE_TYPES = [
+  'Select',
+  'Two-Wheeler',
+  'Car',
+  'Auto Rickshaw',
+  'Taxi / Cab',
+  'Van',
+  'Bus',
+  'Mini Bus',
+  'Tractor',
+  'Construction Vehicle',
+  'Other'
+];
+
 export default function PastVisitors({ history }) {
   const { user } = useAuth();
   const [historyList, setHistoryList] = useState([]);
@@ -34,7 +48,7 @@ export default function PastVisitors({ history }) {
   const [reBoys, setReBoys] = useState(0);
   const [reGirls, setReGirls] = useState(0);
   const [rePlate, setRePlate] = useState('');
-  const [reVehicleType, setReVehicleType] = useState('Car');
+  const [reVehicleType, setReVehicleType] = useState('Select');
   const [reRemarks, setReRemarks] = useState('');
   const [submittingReInvite, setSubmittingReInvite] = useState(false);
   const [reInviteError, setReInviteError] = useState('');
@@ -118,10 +132,10 @@ export default function PastVisitors({ history }) {
     // Vehicle pre-population
     if (record.vehicles && record.vehicles.length > 0) {
       setRePlate(record.vehicles[0].plate_number || '');
-      setReVehicleType(record.vehicles[0].vehicle_type || 'Car');
+      setReVehicleType(record.vehicles[0].vehicle_type || 'Select');
     } else {
       setRePlate(record.vehicle_no || record.registered_plate_number || '');
-      setReVehicleType(record.vehicle_type || record.registered_vehicle_type || 'Car');
+      setReVehicleType(record.vehicle_type || record.registered_vehicle_type || 'Select');
     }
 
     setReRemarks(record.remarks || '');
@@ -178,6 +192,14 @@ export default function PastVisitors({ history }) {
     if (untilDate <= fromDate) {
       setReInviteError('Departure time must be after arrival time.');
       return;
+    }
+
+    // Issues #71 & #72: Vehicle Type is mandatory if plate number is entered
+    if (rePlate.trim()) {
+      if (!reVehicleType || reVehicleType === 'Select') {
+        setReInviteError('Please select a valid Vehicle Type for the entered vehicle plate.');
+        return;
+      }
     }
 
     const isVipHost = user?.user_type === 'VIP_HOST' || user?.role === 'VIP_HOST';
@@ -457,17 +479,18 @@ export default function PastVisitors({ history }) {
                   />
                 </div>
                 <div>
-                  <label className="host-label" style={{ marginTop: 0 }}>Vehicle Type</label>
+                  <label className="host-label" style={{ marginTop: 0 }}>
+                    Vehicle Type {rePlate.trim() && <span style={{ color: '#dc2626' }}>* (Mandatory)</span>}
+                  </label>
                   <select
                     className="host-input"
                     value={reVehicleType}
                     onChange={(e) => setReVehicleType(e.target.value)}
+                    style={{ borderColor: rePlate.trim() && (!reVehicleType || reVehicleType === 'Select') ? '#dc2626' : undefined }}
                   >
-                    <option value="Car">Car</option>
-                    <option value="Two-Wheeler">Two-Wheeler</option>
-                    <option value="Auto Rickshaw">Auto Rickshaw</option>
-                    <option value="Van">Van</option>
-                    <option value="Bus">Bus</option>
+                    {RE_VEHICLE_TYPES.map((vt) => (
+                      <option key={vt} value={vt}>{vt}</option>
+                    ))}
                   </select>
                 </div>
               </div>

@@ -26,10 +26,23 @@ export default function VisitorDetails({ match, history }) {
   const [showEnlargedModal, setShowEnlargedModal] = useState(false);
   const [qrZoomLevel, setQrZoomLevel] = useState(1);
   const [copiedPass, setCopiedPass] = useState(false);
+  const [approving, setApproving] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
 
   useEffect(() => {
     fetchDetails();
   }, [codeOrId]);
+
+  const isApprovedStatus = (status) => {
+    const s = (status || '').toUpperCase();
+    return s === 'APPROVED' || s === 'INSIDE_CAMPUS' || s === 'CHECKED_IN';
+  };
+
+  const isPendingStatus = (status) => {
+    const s = (status || '').toUpperCase();
+    return s.startsWith('PENDING');
+  };
 
   const fetchDetails = async () => {
     setLoading(true);
@@ -42,7 +55,11 @@ export default function VisitorDetails({ match, history }) {
         );
         if (found) {
           setVisitor(found);
-          generateQr(found.pass_code || `PASS-${found.id}`);
+          if (isApprovedStatus(found.status)) {
+            generateQr(found.pass_code || `PASS-${found.id}`);
+          } else {
+            setQrDataUrl('');
+          }
           setLoading(false);
           return;
         }
@@ -52,7 +69,11 @@ export default function VisitorDetails({ match, history }) {
       const passRes = await getPublicPassDetails(codeOrId);
       if (passRes?.pass) {
         setVisitor(passRes.pass);
-        generateQr(passRes.pass.pass_code);
+        if (isApprovedStatus(passRes.pass.status)) {
+          generateQr(passRes.pass.pass_code);
+        } else {
+          setQrDataUrl('');
+        }
       }
     } catch (err) {
       console.warn('Error loading visitor pass details:', err);
@@ -66,6 +87,47 @@ export default function VisitorDetails({ match, history }) {
     QRCode.toDataURL(code, { width: 600, margin: 2 })
       .then((url) => setQrDataUrl(url))
       .catch(() => {});
+  };
+
+  // Issue #65: Ease of access to approve form directly from details
+  const handleApproveVisit = async () => {
+    if (!visitor) return;
+    setApproving(true);
+    try {
+      const res = await updateApproval(visitor.id, 'APPROVE', 'Approved by Host');
+      if (res?.success) {
+        setToastMsg('Visit approved successfully! Gate Pass QR is now active.');
+        const updated = { ...visitor, status: 'APPROVED' };
+        setVisitor(updated);
+        generateQr(updated.pass_code || `PASS-${updated.id}`);
+      } else {
+        setToastMsg(res?.message || 'Failed to approve visit.');
+      }
+    } catch (err) {
+      setToastMsg('Failed to approve visit.');
+    } finally {
+      setApproving(false);
+    }
+  };
+
+  const handleConfirmReject = async () => {
+    if (!visitor) return;
+    setApproving(true);
+    try {
+      const res = await updateApproval(visitor.id, 'REJECT', rejectReason || 'Declined by host');
+      if (res?.success) {
+        setToastMsg('Visit rejected.');
+        setVisitor({ ...visitor, status: 'REJECTED', rejection_reason: rejectReason || 'Declined by host' });
+        setQrDataUrl('');
+        setShowRejectModal(false);
+      } else {
+        setToastMsg(res?.message || 'Failed to reject visit.');
+      }
+    } catch (err) {
+      setToastMsg('Failed to reject visit.');
+    } finally {
+      setApproving(false);
+    }
   };
 
   const handleShare = async () => {
@@ -224,33 +286,75 @@ export default function VisitorDetails({ match, history }) {
           {/* Card matching Attachment 1 & 2 */}
           <div style={{ background: '#ffffff', border: '1.5px solid #ede5da', borderRadius: '22px', padding: '1.5rem', textAlign: 'center', boxShadow: '0 4px 16px rgba(184, 64, 24, 0.06)' }}>
             
-            {/* QR Code Pass Display - Tap to Enlarge */}
-            <div 
-              onClick={() => { setQrZoomLevel(1); setShowEnlargedModal(true); }}
-              title="Tap to enlarge QR Code for gate scanning"
-              style={{ 
-                background: '#faf6f0', 
-                padding: '1.1rem', 
-                borderRadius: '20px', 
-                border: '2.5px solid #b84018', 
-                display: 'inline-block', 
-                margin: '0 auto 1rem auto', 
-                cursor: 'pointer', 
-                boxShadow: '0 6px 20px rgba(184, 64, 24, 0.15)', 
-                transition: 'transform 0.15s ease' 
-              }}
-            >
-              {qrDataUrl ? (
-                <img src={qrDataUrl} alt="Gate Pass QR" style={{ width: '180px', height: '180px', display: 'block', margin: '0 auto', borderRadius: '10px' }} />
-              ) : (
-                <div style={{ width: '180px', height: '180px', background: '#ede5da', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#78716c', fontWeight: 'bold' }}>
-                  QR Code
+            {/* QR Code Pass Display - ONLY for Approved Visits (Issues #63, #64) */}
+            {isApprovedStatus(visitor?.status) ? (
+              <div 
+                onClick={() => { setQrZoomLevel(1); setShowEnlargedModal(true); }}
+                title="Tap to enlarge QR Code for gate scanning"
+                style={{ 
+                  background: '#faf6f0', 
+                  padding: '1.1rem', 
+                  borderRadius: '20px', 
+                  border: '2.5px solid #b84018', 
+                  display: 'inline-block', 
+                  margin: '0 auto 1rem auto', 
+                  cursor: 'pointer', 
+                  boxShadow: '0 6px 20px rgba(184, 64, 24, 0.15)', 
+                  transition: 'transform 0.15s ease' 
+                }}
+              >
+                {qrDataUrl ? (
+                  <img src={qrDataUrl} alt="Gate Pass QR" style={{ width: '180px', height: '180px', display: 'block', margin: '0 auto', borderRadius: '10px' }} />
+                ) : (
+                  <div style={{ width: '180px', height: '180px', background: '#ede5da', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#78716c', fontWeight: 'bold' }}>
+                    Loading QR...
+                  </div>
+                )}
+                <span style={{ fontSize: '0.72rem', color: '#b84018', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', marginTop: '0.5rem' }}>
+                  🔍 Tap to Enlarge &amp; Scan
+                </span>
+              </div>
+            ) : isPendingStatus(visitor?.status) ? (
+              /* Pending State Banner & Fast Approval (Issue #64, #65) */
+              <div style={{ background: '#fffbeb', border: '2px dashed #fde68a', borderRadius: '18px', padding: '1.2rem', margin: '0 auto 1.2rem auto', textAlign: 'center' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '0.4rem' }}>⏳</div>
+                <h3 style={{ margin: '0 0 0.3rem 0', fontSize: '1.05rem', fontWeight: '800', color: '#92400e' }}>
+                  Pending Host Approval
+                </h3>
+                <p style={{ margin: '0 0 1rem 0', fontSize: '0.78rem', color: '#78350f', lineHeight: 1.4 }}>
+                  Review details below. QR Code pass will be issued once you approve this visit.
+                </p>
+                <div style={{ display: 'flex', gap: '0.6rem' }}>
+                  <button
+                    type="button"
+                    disabled={approving}
+                    onClick={handleApproveVisit}
+                    style={{ flex: 1.4, background: '#15803d', border: 'none', color: '#ffffff', fontWeight: '800', padding: '0.8rem', borderRadius: '12px', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', boxShadow: '0 2px 8px rgba(21, 128, 61, 0.25)' }}
+                  >
+                    <CheckCircle size={16} /> {approving ? 'Approving...' : 'Approve Visit'}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={approving}
+                    onClick={() => setShowRejectModal(true)}
+                    style={{ flex: 1, background: '#ffffff', border: '1.5px solid #dc2626', color: '#dc2626', fontWeight: '800', padding: '0.8rem', borderRadius: '12px', cursor: 'pointer', fontSize: '0.85rem' }}
+                  >
+                    ✕ Reject
+                  </button>
                 </div>
-              )}
-              <span style={{ fontSize: '0.72rem', color: '#b84018', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', marginTop: '0.5rem' }}>
-                🔍 Tap to Enlarge &amp; Scan
-              </span>
-            </div>
+              </div>
+            ) : (
+              /* Rejected State (Issue #63) */
+              <div style={{ background: '#fef2f2', border: '2px dashed #fecaca', borderRadius: '18px', padding: '1.2rem', margin: '0 auto 1.2rem auto', textAlign: 'center' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '0.4rem' }}>⛔</div>
+                <h3 style={{ margin: '0 0 0.3rem 0', fontSize: '1.05rem', fontWeight: '800', color: '#991b1b' }}>
+                  Registration Rejected
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: '#7f1d1d' }}>
+                  This request was declined. No QR Code was generated for gate entry.
+                </p>
+              </div>
+            )}
 
             <h2 style={{ fontSize: '1.35rem', fontWeight: '800', color: '#1c1917', margin: '0 0 0.2rem 0' }}>
               {visitor?.visitor_name || 'Guest Visitor'}
@@ -335,43 +439,107 @@ export default function VisitorDetails({ match, history }) {
               </div>
             </div>
 
-            {/* Bottom Actions */}
+            {/* Bottom Actions (Issues #63, #64, #65) */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginTop: '1.4rem' }}>
-              <button
-                type="button"
-                onClick={handleShare}
-                style={{ width: '100%', background: '#25d366', border: 'none', color: '#ffffff', fontWeight: '800', fontSize: '0.9rem', padding: '0.85rem', borderRadius: '9999px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.45rem', boxShadow: '0 4px 12px rgba(37, 211, 102, 0.25)' }}
-              >
-                📲 Share Pass on WhatsApp
-              </button>
+              {isApprovedStatus(visitor?.status) ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleShare}
+                    style={{ width: '100%', background: '#25d366', border: 'none', color: '#ffffff', fontWeight: '800', fontSize: '0.9rem', padding: '0.85rem', borderRadius: '9999px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.45rem', boxShadow: '0 4px 12px rgba(37, 211, 102, 0.25)' }}
+                  >
+                    📲 Share Pass on WhatsApp
+                  </button>
 
-              <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
-                <button
-                  type="button"
-                  onClick={() => handleDownloadPng(qrDataUrl, visitor?.pass_code)}
-                  style={{ flex: 1, padding: '0.75rem', fontSize: '0.82rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', borderRadius: '9999px', border: '1.5px solid #d1d5db', background: '#ffffff', cursor: 'pointer' }}
-                >
-                  <Download size={15} /> Download PNG
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDownloadPdf(visitor, qrDataUrl)}
-                  style={{ flex: 1, padding: '0.75rem', fontSize: '0.82rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', borderRadius: '9999px', border: '1.5px solid #d1d5db', background: '#ffffff', cursor: 'pointer' }}
-                >
-                  <Printer size={15} /> Print / PDF
-                </button>
-              </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadPng(qrDataUrl, visitor?.pass_code)}
+                      style={{ flex: 1, padding: '0.75rem', fontSize: '0.82rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', borderRadius: '9999px', border: '1.5px solid #d1d5db', background: '#ffffff', cursor: 'pointer' }}
+                    >
+                      <Download size={15} /> Download PNG
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadPdf(visitor, qrDataUrl)}
+                      style={{ flex: 1, padding: '0.75rem', fontSize: '0.82rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', borderRadius: '9999px', border: '1.5px solid #d1d5db', background: '#ffffff', cursor: 'pointer' }}
+                    >
+                      <Printer size={15} /> Print / PDF
+                    </button>
+                  </div>
 
-              <button
-                type="button"
-                onClick={() => setShowAlert(true)}
-                style={{ width: '100%', padding: '0.85rem', cursor: 'pointer', border: '1.5px solid #fecaca', background: '#fee2e2', color: '#b91c1c', borderRadius: '9999px', fontWeight: '800', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
-              >
-                <Ban size={16} /> Cancel Visitor Invitation
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowAlert(true)}
+                    style={{ width: '100%', padding: '0.85rem', cursor: 'pointer', border: '1.5px solid #fecaca', background: '#fee2e2', color: '#b91c1c', borderRadius: '9999px', fontWeight: '800', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
+                  >
+                    <Ban size={16} /> Cancel Visitor Invitation
+                  </button>
+                </>
+              ) : isPendingStatus(visitor?.status) ? (
+                <>
+                  <button
+                    type="button"
+                    disabled={approving}
+                    onClick={handleApproveVisit}
+                    style={{ width: '100%', background: '#15803d', border: 'none', color: '#ffffff', fontWeight: '800', fontSize: '0.9rem', padding: '0.85rem', borderRadius: '9999px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.45rem', boxShadow: '0 4px 12px rgba(21, 128, 61, 0.25)' }}
+                  >
+                    <CheckCircle size={18} /> {approving ? 'Approving Visit...' : '✓ Approve & Issue Pass'}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={approving}
+                    onClick={() => setShowRejectModal(true)}
+                    style={{ width: '100%', padding: '0.8rem', cursor: 'pointer', border: '1.5px solid #dc2626', background: '#ffffff', color: '#dc2626', borderRadius: '9999px', fontWeight: '800', fontSize: '0.85rem' }}
+                  >
+                    ✕ Reject Request
+                  </button>
+                </>
+              ) : (
+                <div style={{ padding: '0.8rem', background: '#f5eee6', borderRadius: '12px', color: '#78716c', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                  Visit Request Inactive ({visitor?.status})
+                </div>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Modal: Reject Request with Remarks (Issue #65) */}
+        <IonModal isOpen={showRejectModal} onDidDismiss={() => setShowRejectModal(false)}>
+          <div style={{ padding: '1.5rem', background: '#ffffff', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <h3 style={{ margin: '0 0 0.8rem 0', color: '#991b1b', fontSize: '1.1rem', fontWeight: '800' }}>
+              Reject Visitor Request
+            </h3>
+            <p style={{ fontSize: '0.84rem', color: '#475569', marginBottom: '1rem' }}>
+              Please specify the reason for declining this request. The visitor will be notified.
+            </p>
+            <textarea
+              className="host-input"
+              rows={4}
+              placeholder="e.g. Host unavailable, wrong arrival date, etc."
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              style={{ width: '100%', marginBottom: '1.2rem', padding: '0.75rem', borderRadius: '10px', border: '1.5px solid #cbd5e1' }}
+            />
+            <div style={{ display: 'flex', gap: '0.6rem', marginTop: 'auto' }}>
+              <button
+                type="button"
+                onClick={() => setShowRejectModal(false)}
+                style={{ flex: 1, padding: '0.8rem', borderRadius: '12px', border: '1px solid #cbd5e1', background: '#f1f5f9', fontWeight: 'bold' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={approving}
+                onClick={handleConfirmReject}
+                style={{ flex: 1.5, padding: '0.8rem', borderRadius: '12px', border: 'none', background: '#dc2626', color: '#ffffff', fontWeight: '800' }}
+              >
+                {approving ? 'Rejecting...' : 'Confirm Rejection'}
+              </button>
+            </div>
+          </div>
+        </IonModal>
 
         <IonAlert
           isOpen={showAlert}

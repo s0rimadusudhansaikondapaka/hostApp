@@ -45,6 +45,17 @@ export default function InviteVisitor({ history }) {
   const [visitType, setVisitType] = useState('HOME');
   const [gender, setGender] = useState('Male');
 
+  const handleGenderChange = (val) => {
+    setGender(val);
+    if (val === 'Female') {
+      setAdultMen(0);
+      setAdultWomen(1);
+    } else if (val === 'Male') {
+      setAdultMen(1);
+      setAdultWomen(0);
+    }
+  };
+
   // Accompanying Breakdown & Mode
   const [registrationMode, setRegistrationMode] = useState('Single');
   const [adultMen, setAdultMen] = useState(1);
@@ -350,13 +361,24 @@ export default function InviteVisitor({ history }) {
       return;
     }
 
+    // Issues #71 & #72: Vehicle Type is mandatory if plate number is entered
+    for (let i = 0; i < vehicles.length; i++) {
+      const v = vehicles[i];
+      if (v.plate_number && v.plate_number.trim() !== '') {
+        if (!v.vehicle_type || v.vehicle_type === 'Select') {
+          setError(`Please select a Vehicle Type for Vehicle #${i + 1} (${v.plate_number.trim()}).`);
+          return;
+        }
+      }
+    }
+
     // Clean vehicles
     const validVehicles = vehicles
       .filter((v) => v.plate_number.trim() !== '')
       .slice(0, 5)
       .map((v) => ({
         plate_number: v.plate_number.trim().toUpperCase(),
-        vehicle_type: v.vehicle_type === 'Select' ? 'Car' : v.vehicle_type,
+        vehicle_type: v.vehicle_type,
         driver_name: v.driver_name || '',
         driver_phone: v.driver_phone || '',
       }));
@@ -403,7 +425,8 @@ export default function InviteVisitor({ history }) {
         reg.person_count = isSingle ? 1 : (computedMen + computedWomen + computedBoys + computedGirls);
 
         let qrUrl = reg.qr_code_url;
-        if (!qrUrl) {
+        // Issue #63 & #64: QR code should be generated only for approved visits
+        if (!qrUrl && (reg.status === 'APPROVED' || reg.status === 'INSIDE_CAMPUS')) {
           try {
             const qrPayload = JSON.stringify({
               passCode: reg.pass_code,
@@ -421,6 +444,8 @@ export default function InviteVisitor({ history }) {
             });
             qrUrl = await QRCode.toDataURL(qrPayload, { width: 500, margin: 2 });
           } catch (e) {}
+        } else if (reg.status !== 'APPROVED' && reg.status !== 'INSIDE_CAMPUS') {
+          qrUrl = '';
         }
         setCreatedPassQrUrl(qrUrl);
         setCreatedPassModal(reg);
@@ -537,7 +562,7 @@ export default function InviteVisitor({ history }) {
               </div>
               <div>
                 <label className="host-label">Gender *</label>
-                <select className="host-input" value={gender} onChange={(e) => setGender(e.target.value)}>
+                <select className="host-input" value={gender} onChange={(e) => handleGenderChange(e.target.value)}>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                   <option value="Other">Other</option>
@@ -570,7 +595,6 @@ export default function InviteVisitor({ history }) {
                   type="datetime-local"
                   required
                   min={getMinDateTime()}
-                  max={validUntil ? validUntil : (validFrom ? `${validFrom.split('T')[0]}T22:00` : undefined)}
                   className="host-input"
                   value={validFrom}
                   onChange={(e) => handleArrivalChange(e.target.value)}
@@ -703,9 +727,12 @@ export default function InviteVisitor({ history }) {
                     className="host-input"
                     value={veh.vehicle_type}
                     onChange={(e) => updateVehicle(idx, 'vehicle_type', e.target.value)}
+                    style={{
+                      borderColor: veh.plate_number && veh.plate_number.trim() !== '' && veh.vehicle_type === 'Select' ? '#dc2626' : undefined,
+                    }}
                   >
                     {VEHICLE_TYPES.map((t) => (
-                      <option key={t} value={t}>{t}</option>
+                      <option key={t} value={t}>{t === 'Select' && veh.plate_number && veh.plate_number.trim() !== '' ? 'Select Vehicle Type *' : t}</option>
                     ))}
                   </select>
                 </div>
