@@ -89,7 +89,7 @@ export default function ActiveVisitors({ history }) {
           </div>
         ) : (
           activeList.map((r) => {
-            const isInside = r.status === 'INSIDE_CAMPUS';
+            const isInside = r.status === 'INSIDE_CAMPUS' || r.presence_status === 'currently_inside';
 
             return (
               <div

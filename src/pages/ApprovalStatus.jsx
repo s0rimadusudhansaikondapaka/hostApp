@@ -124,7 +124,7 @@ export default function ApprovalStatus({ history }) {
     } else if (activeTab === 'REJECTED') {
       if (r.status !== 'REJECTED') return false;
     } else if (activeTab === 'CHECKED_IN') {
-      if (r.status !== 'INSIDE_CAMPUS') return false;
+      if (r.status !== 'INSIDE_CAMPUS' && r.presence_status !== 'currently_inside') return false;
     }
 
     // Search filter
@@ -189,7 +189,7 @@ export default function ApprovalStatus({ history }) {
             { id: 'ALL', label: `All (${registrations.length})` },
             { id: 'PENDING', label: `⏳ Pending (${registrations.filter(r => r.status === 'PENDING_L1').length})` },
             { id: 'APPROVED', label: `✓ Approved (${registrations.filter(r => r.status === 'APPROVED').length})` },
-            { id: 'CHECKED_IN', label: `🟢 Inside (${registrations.filter(r => r.status === 'INSIDE_CAMPUS').length})` },
+            { id: 'CHECKED_IN', label: `🟢 Inside (${registrations.filter(r => r.status === 'INSIDE_CAMPUS' || r.presence_status === 'currently_inside').length})` },
             { id: 'REJECTED', label: `❌ Rejected (${registrations.filter(r => r.status === 'REJECTED').length})` },
           ].map((tab) => (
             <button
@@ -246,7 +246,7 @@ export default function ApprovalStatus({ history }) {
           ) : (
             filtered.map((r) => {
               const isPending = r.status === 'PENDING_L1';
-              const isInside = r.status === 'INSIDE_CAMPUS';
+              const isInside = r.status === 'INSIDE_CAMPUS' || r.presence_status === 'currently_inside';
               const isApproved = r.status === 'APPROVED' || r.status === 'PENDING_L2';
               const isRejected = r.status === 'REJECTED';
 
