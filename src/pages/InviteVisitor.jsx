@@ -45,6 +45,11 @@ export default function InviteVisitor({ history }) {
   const [visitType, setVisitType] = useState('HOME');
   const [gender, setGender] = useState('Male');
 
+  // Issue #80: Optional ID Proof for Host Visitor Invite
+  const [idType, setIdType] = useState('Aadhaar');
+  const [idNumber, setIdNumber] = useState('');
+  const [idCardImageUrl, setIdCardImageUrl] = useState('');
+
   const handleGenderChange = (val) => {
     setGender(val);
     if (val === 'Female') {
@@ -301,6 +306,9 @@ export default function InviteVisitor({ history }) {
     setValidFrom(defaultFrom);
     setValidUntil(computeSameDayDeparture(defaultFrom));
     setVehicles([{ plate_number: '', vehicle_type: 'Select', driver_name: '', driver_phone: '' }]);
+    setIdType('Aadhaar');
+    setIdNumber('');
+    setIdCardImageUrl('');
     setAccommodationRequired(false);
     setRemarks('');
     setError('');
@@ -408,6 +416,10 @@ export default function InviteVisitor({ history }) {
       children_count: computedBoys + computedGirls,
       person_count: isSingle ? 1 : (computedMen + computedWomen + computedBoys + computedGirls),
       vehicles: validVehicles,
+      id_type: idType,
+      id_number: idNumber.trim(),
+      id_card_number: idNumber.trim(),
+      id_card_image_url: idCardImageUrl || '',
       is_spot_registration: false,
     };
 
@@ -449,6 +461,14 @@ export default function InviteVisitor({ history }) {
         }
         setCreatedPassQrUrl(qrUrl);
         setCreatedPassModal(reg);
+        try {
+          const cachedRaw = localStorage.getItem('MYASRAM_HOST_REGISTRATIONS_CACHE');
+          const cached = cachedRaw ? JSON.parse(cachedRaw) : [];
+          const exists = cached.some(c => (c.pass_code && c.pass_code === reg.pass_code) || (c.id && c.id === reg.id));
+          if (!exists) {
+            localStorage.setItem('MYASRAM_HOST_REGISTRATIONS_CACHE', JSON.stringify([{ ...reg, qr_code_url: qrUrl }, ...cached]));
+          }
+        } catch (e) {}
       } else {
         setError(res?.message || 'Failed to submit visitor invite.');
       }
@@ -740,10 +760,85 @@ export default function InviteVisitor({ history }) {
             ))}
           </div>
 
-          {/* Section 5: Remarks (Issues #21, #22, #27) */}
+          {/* Section 5: ID Proof Details (Issue #80: New Requirement - Optional) */}
+          <div style={{ background: '#ffffff', border: '1.5px solid #ede5da', borderRadius: '20px', padding: '1.1rem', marginBottom: '1rem', boxShadow: '0 2px 8px rgba(184, 64, 24, 0.04)' }}>
+            <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.92rem', fontWeight: '800', color: '#b84018', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <span>5.</span> ID Proof Details (Optional)
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '0.6rem', marginBottom: '0.8rem' }}>
+              <div>
+                <label className="host-label" style={{ marginTop: 0 }}>ID Document Type (Optional)</label>
+                <select className="host-input" value={idType} onChange={(e) => setIdType(e.target.value)}>
+                  <option value="Aadhaar">Aadhaar Card</option>
+                  <option value="Voter ID">Voter ID</option>
+                  <option value="Driving License">Driving License</option>
+                  <option value="Passport">Passport</option>
+                  <option value="PAN Card">PAN Card</option>
+                  <option value="Other">Other Official ID</option>
+                </select>
+              </div>
+              <div>
+                <label className="host-label" style={{ marginTop: 0 }}>ID Document Number (Optional)</label>
+                <input
+                  type="text"
+                  className="host-input"
+                  placeholder="e.g. XXXX-XXXX-XXXX"
+                  value={idNumber}
+                  onChange={(e) => setIdNumber(e.target.value)}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="host-label" style={{ marginTop: 0 }}>Attach ID Proof Document / Photo (Optional)</label>
+              <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <label style={{
+                  padding: '0.5rem 0.9rem',
+                  borderRadius: '10px',
+                  background: '#faf6f0',
+                  border: '1.5px dashed #cbd5e1',
+                  color: '#b84018',
+                  fontSize: '0.78rem',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  📎 Upload ID Document
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => setIdCardImageUrl(reader.result);
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+                {idCardImageUrl && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#15803d', fontWeight: 'bold' }}>✓ ID Attached</span>
+                    <button
+                      type="button"
+                      onClick={() => setIdCardImageUrl('')}
+                      style={{ background: 'none', border: 'none', color: '#dc2626', fontSize: '0.72rem', cursor: 'pointer', fontWeight: 'bold' }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Section 6: Remarks (Issues #21, #22, #27) */}
           <div style={{ background: '#ffffff', border: '1.5px solid #ede5da', borderRadius: '20px', padding: '1.1rem', marginBottom: '1.5rem', boxShadow: '0 2px 8px rgba(184, 64, 24, 0.04)' }}>
             <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.92rem', fontWeight: '800', color: '#b84018', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <span>5.</span> {isVipHost ? 'Remarks' : 'Accommodation & Remarks'}
+              <span>6.</span> {isVipHost ? 'Remarks' : 'Accommodation & Remarks'}
             </h3>
 
             {!isVipHost && (

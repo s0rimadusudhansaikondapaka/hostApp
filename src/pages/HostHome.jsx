@@ -868,13 +868,9 @@ export default function HostHome({ history }) {
                 onClick={() => {
                   if (!inviteLink) return;
                   const msg = `Jay Sai Ram! You are invited to Sathya Sai Grama by ${user?.name || 'Ashram Host'}. Please complete your visitor pass pre-registration here: ${inviteLink}`;
-                  if (navigator.share) {
-                    navigator.share({ title: 'Ashram Visitor Invite', text: msg, url: inviteLink }).catch(() => {});
-                  } else {
-                    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-                  }
+                  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
                 }}
-                style={{ padding: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontWeight: 'bold', opacity: generatingToken || !shareToken ? 0.6 : 1 }}
+                style={{ padding: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontWeight: 'bold', background: '#25d366', color: '#ffffff', border: 'none', borderRadius: '12px', cursor: generatingToken || !shareToken ? 'not-allowed' : 'pointer', opacity: generatingToken || !shareToken ? 0.6 : 1 }}
               >
                 <Share2 size={16} /> Share via WhatsApp
               </button>
